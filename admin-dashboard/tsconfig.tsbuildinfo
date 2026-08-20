@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/Layout.tsx","./src/context/AuthContext.tsx","./src/lib/dateUtils.ts","./src/lib/domain.ts","./src/lib/firebase.ts","./src/pages/CategoriesPage.tsx","./src/pages/DeliveryViewPage.tsx","./src/pages/LoginPage.tsx","./src/pages/SubscriptionsPage.tsx","./src/pages/TodayOrdersPage.tsx"],"version":"5.9.3"}
