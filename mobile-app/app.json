@@ -7,7 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#2E7D32"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2F6B3C"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -19,10 +21,15 @@
     },
     "android": {
       "package": "com.vegcuttingapp.customer",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2F6B3C"
+      }
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       [
