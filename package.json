@@ -1,0 +1,11 @@
+{
+  "name": "veg-cutting-app",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "functions",
+    "admin-dashboard",
+    "mobile-app"
+  ]
+}

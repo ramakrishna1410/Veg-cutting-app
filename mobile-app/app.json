@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Veg Cutting App",
+    "slug": "veg-cutting-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2E7D32"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vegcuttingapp.customer",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to check if you're within our 5 km Keelkattalai delivery area and to prefill your delivery address."
+      }
+    },
+    "android": {
+      "package": "com.vegcuttingapp.customer",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "We use your location to check if you're within our 5 km Keelkattalai delivery area."
+        }
+      ]
+    ]
+  }
+}

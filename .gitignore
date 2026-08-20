@@ -1,0 +1,10 @@
+node_modules/
+dist/
+lib/
+.expo/
+web-build/
+*.log
+.env
+.DS_Store
+.firebase/
+firebase-debug.log

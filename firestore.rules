@@ -1,0 +1,98 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(myUid()));
+    }
+
+    function myRole() {
+      return isSignedIn() && userDoc() != null ? userDoc().data.role : null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && myRole() == 'admin';
+    }
+
+    function isDelivery() {
+      return isSignedIn() && myRole() == 'delivery';
+    }
+
+    // Users can read/create their own profile; only admins can change roles.
+    match /users/{uid} {
+      allow read: if isSignedIn() && (myUid() == uid || isAdmin() || isDelivery());
+      allow create: if isSignedIn() && myUid() == uid
+                    && request.resource.data.role == 'customer';
+      allow update: if isAdmin()
+                    || (isSignedIn() && myUid() == uid
+                        && request.resource.data.role == resource.data.role);
+      allow delete: if isAdmin();
+    }
+
+    // Addresses belong to a single customer; admin/delivery can read for fulfillment.
+    match /addresses/{addressId} {
+      allow read: if isSignedIn() && (resource.data.uid == myUid() || isAdmin() || isDelivery());
+      allow create: if isSignedIn() && request.resource.data.uid == myUid();
+      allow update, delete: if isSignedIn() && (resource.data.uid == myUid() || isAdmin());
+    }
+
+    // Category catalog is public-read, admin-write.
+    match /vegCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Subscriptions: customer owns theirs (read/pause/cancel); admin has full control.
+    // Creation of NEW subscriptions is only done via the createSubscription Cloud
+    // Function (which enforces the booking window + service area), never a direct
+    // client write, so client-side create is disallowed here.
+    match /subscriptions/{subId} {
+      allow read: if isSignedIn() && (resource.data.uid == myUid() || isAdmin());
+      allow create: if false;
+      allow update: if isAdmin()
+                    || (isSignedIn() && resource.data.uid == myUid()
+                        // customers may only toggle status between active/paused/cancelled
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['status']));
+      allow delete: if isAdmin();
+    }
+
+    // Orders: same pattern. Creation goes through createOrder / generateDailyOrders
+    // Cloud Functions only. Delivery partners may update status on orders assigned
+    // to them; admin has full control.
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (
+        resource.data.uid == myUid() ||
+        isAdmin() ||
+        (isDelivery() && resource.data.assignedDeliveryUid == myUid())
+      );
+      allow create: if false;
+      allow update: if isAdmin()
+                    || (isDelivery() && resource.data.assignedDeliveryUid == myUid()
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['status']))
+                    || (isSignedIn() && resource.data.uid == myUid()
+                        && resource.data.status == 'pending'
+                        && request.resource.data.status == 'cancelled'
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['status']));
+      allow delete: if isAdmin();
+    }
+
+    // Global config docs (booking windows, service area) — read by everyone
+    // (client UI needs them), written only by admins.
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

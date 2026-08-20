@@ -1,0 +1,43 @@
+import React from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import Layout from "@/components/Layout";
+import LoginPage from "@/pages/LoginPage";
+import TodayOrdersPage from "@/pages/TodayOrdersPage";
+import CategoriesPage from "@/pages/CategoriesPage";
+import SubscriptionsPage from "@/pages/SubscriptionsPage";
+import DeliveryViewPage from "@/pages/DeliveryViewPage";
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Gate />
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
+
+function Gate() {
+  const { firebaseUser, appUser, loading } = useAuth();
+
+  if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
+  if (!firebaseUser || !appUser) return <LoginPage />;
+  if (appUser.role !== "admin" && appUser.role !== "delivery") {
+    return <p style={{ padding: 24 }}>This account doesn't have admin or delivery access.</p>;
+  }
+
+  const isAdmin = appUser.role === "admin";
+
+  return (
+    <Layout>
+      <Routes>
+        {isAdmin && <Route path="/orders" element={<TodayOrdersPage />} />}
+        {isAdmin && <Route path="/categories" element={<CategoriesPage />} />}
+        {isAdmin && <Route path="/subscriptions" element={<SubscriptionsPage />} />}
+        <Route path="/delivery" element={<DeliveryViewPage />} />
+        <Route path="*" element={<Navigate to={isAdmin ? "/orders" : "/delivery"} replace />} />
+      </Routes>
+    </Layout>
+  );
+}
