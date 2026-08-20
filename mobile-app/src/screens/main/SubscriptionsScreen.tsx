@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import { collection, doc, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useCategories } from "@/context/CategoriesContext";
 import { SubscriptionDoc } from "@/lib/domain";
+import { colors, fonts } from "@/lib/theme";
+import { Card, Chip, SecondaryButton } from "@/components/ui";
 
 export default function SubscriptionsScreen() {
   const { appUser } = useAuth();
@@ -36,26 +38,25 @@ export default function SubscriptionsScreen() {
         data={subs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {getCategory(item.categoryId)?.name ?? item.categoryId}
-            </Text>
+          <Card>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <Text style={styles.cardTitle}>{getCategory(item.categoryId)?.name ?? item.categoryId}</Text>
+              <Chip status={item.status} />
+            </View>
             <Text style={styles.cardSub}>
-              {item.plan} · {item.slot === "morning" ? "5–8 AM" : "5–8 PM"} · {item.status}
+              {item.plan} · {item.slot === "morning" ? "5–8 AM" : "5–8 PM"}
             </Text>
             {item.status !== "cancelled" && (
               <View style={styles.actions}>
-                <Pressable style={styles.actionButton} onPress={() => togglePause(item)}>
-                  <Text style={styles.actionText}>
-                    {item.status === "active" ? "Pause" : "Resume"}
-                  </Text>
-                </Pressable>
-                <Pressable style={styles.actionButton} onPress={() => cancel(item)}>
-                  <Text style={[styles.actionText, styles.cancelText]}>Cancel</Text>
-                </Pressable>
+                <SecondaryButton onPress={() => togglePause(item)}>
+                  {item.status === "active" ? "Pause" : "Resume"}
+                </SecondaryButton>
+                <SecondaryButton onPress={() => cancel(item)} style={{ borderColor: colors.dangerBg }}>
+                  Cancel
+                </SecondaryButton>
               </View>
             )}
-          </View>
+          </Card>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       />
@@ -64,14 +65,10 @@ export default function SubscriptionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 16 },
-  empty: { color: "#777" },
-  card: { backgroundColor: "#F1F8E9", borderRadius: 12, padding: 16 },
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#33691E" },
-  cardSub: { fontSize: 13, color: "#555", marginTop: 4, textTransform: "capitalize" },
-  actions: { flexDirection: "row", gap: 16, marginTop: 12 },
-  actionButton: { paddingVertical: 6 },
-  actionText: { color: "#2E7D32", fontWeight: "600", fontSize: 13 },
-  cancelText: { color: "#C62828" },
+  container: { flex: 1, padding: 20, paddingTop: 56, backgroundColor: colors.bg },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.text, marginBottom: 16 },
+  empty: { color: colors.textMuted, fontFamily: fonts.sans },
+  cardTitle: { fontSize: 16, fontFamily: fonts.serifMedium, color: colors.text, flexShrink: 1, marginRight: 8 },
+  cardSub: { fontSize: 13, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 6, textTransform: "capitalize" },
+  actions: { flexDirection: "row", gap: 10, marginTop: 14 },
 });

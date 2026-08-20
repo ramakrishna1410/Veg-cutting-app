@@ -1,10 +1,13 @@
 import React, { useRef, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
+import { Leaf } from "lucide-react-native";
 import { signInWithPhoneNumber } from "firebase/auth";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { auth, app } from "@/lib/firebase";
 import { AuthStackParamList } from "@/navigation/types";
+import { colors, fonts, radii } from "@/lib/theme";
+import { PrimaryButton } from "@/components/ui";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "PhoneLogin">;
 
@@ -23,15 +26,8 @@ export default function PhoneLoginScreen({ navigation }: Props) {
     if (!recaptchaVerifier.current) return;
     setSending(true);
     try {
-      const confirmation = await signInWithPhoneNumber(
-        auth,
-        phone,
-        recaptchaVerifier.current
-      );
-      navigation.navigate("OtpVerify", {
-        verificationId: confirmation.verificationId,
-        phone,
-      });
+      const confirmation = await signInWithPhoneNumber(auth, phone, recaptchaVerifier.current);
+      navigation.navigate("OtpVerify", { verificationId: confirmation.verificationId, phone });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not send OTP.");
     } finally {
@@ -41,12 +37,13 @@ export default function PhoneLoginScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVerifier}
-        firebaseConfig={app.options}
-      />
+      <FirebaseRecaptchaVerifierModal ref={recaptchaVerifier} firebaseConfig={app.options} />
+      <View style={styles.crest}>
+        <Leaf size={26} color="#fff" />
+      </View>
       <Text style={styles.title}>Veg Cutting App</Text>
       <Text style={styles.subtitle}>Fresh cut veggies, delivered daily.</Text>
+
       <Text style={styles.label}>Mobile number</Text>
       <TextInput
         style={styles.input}
@@ -54,41 +51,34 @@ export default function PhoneLoginScreen({ navigation }: Props) {
         onChangeText={setPhone}
         keyboardType="phone-pad"
         placeholder="+91XXXXXXXXXX"
+        placeholderTextColor={colors.textMuted}
       />
       {error && <Text style={styles.error}>{error}</Text>}
-      <Pressable
-        style={[styles.button, sending && styles.buttonDisabled]}
-        onPress={handleSendOtp}
-        disabled={sending}
-      >
-        <Text style={styles.buttonText}>
-          {sending ? "Sending..." : "Send OTP"}
-        </Text>
-      </Pressable>
+      <PrimaryButton onPress={handleSendOtp} disabled={sending}>
+        {sending ? "Sending..." : "Send OTP"}
+      </PrimaryButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 24 },
-  title: { fontSize: 28, fontWeight: "700", color: "#2E7D32" },
-  subtitle: { fontSize: 15, color: "#555", marginBottom: 32 },
-  label: { fontSize: 13, color: "#333", marginBottom: 6 },
+  container: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: colors.bg },
+  crest: {
+    width: 60, height: 60, borderRadius: 18, backgroundColor: colors.accent,
+    alignItems: "center", justifyContent: "center", marginBottom: 18,
+  },
+  title: { fontSize: 26, fontFamily: fonts.serif, color: colors.text },
+  subtitle: { fontSize: 14.5, fontFamily: fonts.sans, color: colors.textMuted, marginBottom: 32, marginTop: 4 },
+  label: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, marginBottom: 6 },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    padding: 13,
     fontSize: 16,
-    marginBottom: 12,
+    fontFamily: fonts.sans,
+    color: colors.text,
+    marginBottom: 16,
   },
-  error: { color: "#C62828", marginBottom: 12 },
-  button: {
-    backgroundColor: "#2E7D32",
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  error: { color: colors.danger, marginBottom: 12, fontFamily: fonts.sans, fontSize: 13 },
 });

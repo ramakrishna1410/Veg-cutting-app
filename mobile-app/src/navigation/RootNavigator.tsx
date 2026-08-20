@@ -12,6 +12,7 @@ import MainTabs from "@/navigation/MainTabs";
 import CategoryDetailScreen from "@/screens/main/CategoryDetailScreen";
 import SlotPlanPickerScreen from "@/screens/main/SlotPlanPickerScreen";
 import CheckoutScreen from "@/screens/main/CheckoutScreen";
+import { colors } from "@/lib/theme";
 import {
   AuthStackParamList,
   OnboardingStackParamList,
@@ -25,7 +26,7 @@ const RootStack = createNativeStackNavigator<RootStackParamList & { Main: undefi
 function LoadingScreen() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ActivityIndicator size="large" color="#2E7D32" />
+      <ActivityIndicator size="large" color={colors.accent} />
     </View>
   );
 }

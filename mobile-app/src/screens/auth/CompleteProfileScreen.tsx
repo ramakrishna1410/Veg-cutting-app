@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import { useAuth } from "@/context/AuthContext";
+import { colors, fonts, radii } from "@/lib/theme";
+import { PrimaryButton } from "@/components/ui";
 
 export default function CompleteProfileScreen() {
   const { completeProfile } = useAuth();
@@ -12,7 +14,6 @@ export default function CompleteProfileScreen() {
     setSaving(true);
     try {
       await completeProfile(name.trim());
-      // AuthContext updates appUser, RootNavigator moves on to onboarding.
     } finally {
       setSaving(false);
     }
@@ -26,35 +27,26 @@ export default function CompleteProfileScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Your name"
+        placeholderTextColor={colors.textMuted}
       />
-      <Pressable
-        style={[styles.button, saving && styles.buttonDisabled]}
-        onPress={handleSave}
-        disabled={saving || !name.trim()}
-      >
-        <Text style={styles.buttonText}>{saving ? "Saving..." : "Continue"}</Text>
-      </Pressable>
+      <PrimaryButton onPress={handleSave} disabled={saving || !name.trim()}>
+        {saving ? "Saving..." : "Continue"}
+      </PrimaryButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 24 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 24 },
+  container: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: colors.bg },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.text, marginBottom: 24 },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    padding: 13,
     fontSize: 16,
+    fontFamily: fonts.sans,
+    color: colors.text,
     marginBottom: 16,
   },
-  button: {
-    backgroundColor: "#2E7D32",
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });

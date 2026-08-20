@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCategories } from "@/context/CategoriesContext";
 import { RootStackParamList } from "@/navigation/types";
+import { colors, fonts, radii } from "@/lib/theme";
+import { PrimaryButton, Card } from "@/components/ui";
 
 type Props = NativeStackScreenProps<RootStackParamList, "CategoryDetail">;
 
@@ -13,7 +15,7 @@ export default function CategoryDetailScreen({ route, navigation }: Props) {
   if (!category) {
     return (
       <View style={styles.container}>
-        <Text>Category not found.</Text>
+        <Text style={{ fontFamily: fonts.sans, color: colors.text }}>Category not found.</Text>
       </View>
     );
   }
@@ -24,48 +26,50 @@ export default function CategoryDetailScreen({ route, navigation }: Props) {
       <Text style={styles.description}>{category.description}</Text>
 
       <Text style={styles.sectionLabel}>Includes</Text>
-      {category.items.map((item) => (
-        <Text key={item} style={styles.item}>
-          • {item}
-        </Text>
-      ))}
+      <Card style={{ marginBottom: 20 }}>
+        {category.items.map((item, i) => (
+          <Text key={item} style={[styles.item, i > 0 && { marginTop: 6 }]}>
+            • {item}
+          </Text>
+        ))}
+      </Card>
 
       <View style={styles.pricingBox}>
-        <Text style={styles.pricingRow}>Weekly: ₹{category.priceWeekly}</Text>
-        <Text style={styles.pricingRow}>Monthly: ₹{category.priceMonthly}</Text>
+        <View>
+          <Text style={styles.pricingLabel}>Weekly</Text>
+          <Text style={styles.pricingValue}>₹{category.priceWeekly}</Text>
+        </View>
+        <View style={styles.pricingDivider} />
+        <View>
+          <Text style={styles.pricingLabel}>Monthly</Text>
+          <Text style={styles.pricingValue}>₹{category.priceMonthly}</Text>
+        </View>
       </View>
 
-      <Pressable
-        style={styles.button}
-        onPress={() =>
-          navigation.navigate("SlotPlanPicker", { categoryId: category.id })
-        }
+      <PrimaryButton
+        style={{ marginTop: 28 }}
+        onPress={() => navigation.navigate("SlotPlanPicker", { categoryId: category.id })}
       >
-        <Text style={styles.buttonText}>Choose slot & plan</Text>
-      </Pressable>
+        Choose slot &amp; plan
+      </PrimaryButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56 },
-  title: { fontSize: 24, fontWeight: "700", color: "#33691E" },
-  description: { fontSize: 14, color: "#555", marginTop: 8, marginBottom: 20 },
-  sectionLabel: { fontSize: 13, fontWeight: "600", color: "#333", marginBottom: 8 },
-  item: { fontSize: 14, color: "#444", marginBottom: 4 },
+  container: { flex: 1, padding: 20, paddingTop: 56, backgroundColor: colors.bg },
+  title: { fontSize: 24, fontFamily: fonts.serif, color: colors.text },
+  description: { fontSize: 14, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 8, marginBottom: 20 },
+  sectionLabel: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, marginBottom: 8 },
+  item: { fontSize: 14, fontFamily: fonts.sans, color: colors.text },
   pricingBox: {
-    backgroundColor: "#F1F8E9",
-    borderRadius: 10,
-    padding: 14,
-    marginTop: 20,
-  },
-  pricingRow: { fontSize: 15, fontWeight: "600", color: "#2E7D32" },
-  button: {
-    backgroundColor: "#2E7D32",
-    borderRadius: 8,
-    padding: 14,
+    backgroundColor: colors.panel,
+    borderRadius: radii.lg,
+    padding: 18,
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 24,
   },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  pricingLabel: { fontSize: 11.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, textTransform: "uppercase" },
+  pricingValue: { fontSize: 20, fontFamily: fonts.serif, color: colors.accent, marginTop: 2 },
+  pricingDivider: { width: 1, height: 32, backgroundColor: colors.border, marginHorizontal: 24 },
 });

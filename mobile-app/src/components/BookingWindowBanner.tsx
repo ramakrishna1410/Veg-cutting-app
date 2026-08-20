@@ -1,24 +1,32 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Clock } from "lucide-react-native";
 import { useBookingWindow } from "@/lib/useBookingWindow";
+import { colors, fonts, radii } from "@/lib/theme";
 
 export default function BookingWindowBanner() {
   const openSlot = useBookingWindow();
 
   return (
-    <View style={[styles.banner, openSlot ? styles.open : styles.closed]}>
-      <Text style={styles.text}>
+    <View style={[styles.banner, { backgroundColor: openSlot ? colors.panel2 : "#FBF1E0" }]}>
+      <Clock size={15} color={openSlot ? colors.accent : "#92650E"} />
+      <Text style={[styles.text, { color: openSlot ? colors.accent : "#92650E" }]}>
         {openSlot
           ? `Booking is open now for the ${openSlot} slot`
-          : "Booking is closed. Open 5:00–8:00 AM and 5:00–8:00 PM daily."}
+          : "Booking is closed. Opens 5–8 AM and 5–8 PM daily."}
       </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  banner: { padding: 10, borderRadius: 8, marginBottom: 16 },
-  open: { backgroundColor: "#E8F5E9" },
-  closed: { backgroundColor: "#FFF3E0" },
-  text: { fontSize: 13, color: "#333", textAlign: "center" },
+  banner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: radii.md,
+    marginBottom: 16,
+  },
+  text: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, flexShrink: 1 },
 });

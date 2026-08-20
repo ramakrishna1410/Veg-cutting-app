@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import { PhoneAuthProvider, signInWithCredential } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { auth } from "@/lib/firebase";
 import { AuthStackParamList } from "@/navigation/types";
+import { colors, fonts, radii } from "@/lib/theme";
+import { PrimaryButton } from "@/components/ui";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "OtpVerify">;
 
@@ -19,8 +21,6 @@ export default function OtpVerifyScreen({ route }: Props) {
     try {
       const credential = PhoneAuthProvider.credential(verificationId, code);
       await signInWithCredential(auth, credential);
-      // onAuthStateChanged in AuthContext takes it from here — if this is a
-      // new user, RootNavigator routes them to CompleteProfile automatically.
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid code.");
     } finally {
@@ -38,41 +38,30 @@ export default function OtpVerifyScreen({ route }: Props) {
         onChangeText={setCode}
         keyboardType="number-pad"
         placeholder="6-digit code"
+        placeholderTextColor={colors.textMuted}
         maxLength={6}
       />
       {error && <Text style={styles.error}>{error}</Text>}
-      <Pressable
-        style={[styles.button, verifying && styles.buttonDisabled]}
-        onPress={handleVerify}
-        disabled={verifying}
-      >
-        <Text style={styles.buttonText}>
-          {verifying ? "Verifying..." : "Verify"}
-        </Text>
-      </Pressable>
+      <PrimaryButton onPress={handleVerify} disabled={verifying}>
+        {verifying ? "Verifying..." : "Verify"}
+      </PrimaryButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 24 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { fontSize: 15, color: "#555", marginBottom: 24 },
+  container: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: colors.bg },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.text, marginBottom: 8 },
+  subtitle: { fontSize: 14.5, fontFamily: fonts.sans, color: colors.textMuted, marginBottom: 24 },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    padding: 13,
     fontSize: 16,
-    marginBottom: 12,
+    fontFamily: fonts.sans,
+    color: colors.text,
+    marginBottom: 16,
   },
-  error: { color: "#C62828", marginBottom: 12 },
-  button: {
-    backgroundColor: "#2E7D32",
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  error: { color: colors.danger, marginBottom: 12, fontFamily: fonts.sans, fontSize: 13 },
 });

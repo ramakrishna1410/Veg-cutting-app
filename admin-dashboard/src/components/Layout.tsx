@@ -1,48 +1,87 @@
 import React, { PropsWithChildren } from "react";
 import { NavLink } from "react-router-dom";
+import {
+  ClipboardList,
+  Leaf,
+  Users,
+  Truck,
+  LogOut,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+
+const ADMIN_NAV = [
+  { to: "/orders", label: "Today's Orders", icon: ClipboardList },
+  { to: "/categories", label: "Categories", icon: Leaf },
+  { to: "/subscriptions", label: "Subscriptions", icon: Users },
+];
 
 export default function Layout({ children }: PropsWithChildren) {
   const { appUser, signOut } = useAuth();
   const isAdmin = appUser?.role === "admin";
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", minHeight: "100vh" }}>
-      <header style={headerStyle}>
-        <span style={{ fontWeight: 700, color: "#2E7D32" }}>Veg Cutting App</span>
-        <nav style={{ display: "flex", gap: 16 }}>
-          {isAdmin && <NavLink to="/orders" style={navStyle}>Today's Orders</NavLink>}
-          {isAdmin && <NavLink to="/categories" style={navStyle}>Categories</NavLink>}
-          {isAdmin && <NavLink to="/subscriptions" style={navStyle}>Subscriptions</NavLink>}
-          <NavLink to="/delivery" style={navStyle}>My Deliveries</NavLink>
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="crest">VC</div>
+          <div>
+            <div className="brand-name">Veg Cutting App</div>
+            <div className="brand-sub">Keelkattalai Hub</div>
+          </div>
+        </div>
+
+        <nav className="nav">
+          {isAdmin &&
+            ADMIN_NAV.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
+              >
+                <Icon size={17} /> {label}
+              </NavLink>
+            ))}
+          <NavLink
+            to="/delivery"
+            className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
+          >
+            <Truck size={17} /> My Deliveries
+          </NavLink>
         </nav>
-        <button onClick={signOut} style={signOutStyle}>Sign out ({appUser?.role})</button>
-      </header>
-      <main style={{ padding: 24 }}>{children}</main>
+
+        <div className="sidebar-foot">
+          <button className="nav-item" onClick={signOut}>
+            <LogOut size={17} /> Log out
+          </button>
+        </div>
+      </aside>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="topbar">
+          <span className="eyebrow">{appUser?.role === "admin" ? "Admin console" : "Delivery partner"}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className="role-pill">{appUser?.role}</span>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                background: "linear-gradient(180deg, var(--accent-bright), var(--accent))",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "'Newsreader', serif",
+                fontWeight: 700,
+                fontSize: 13.5,
+              }}
+            >
+              {appUser?.name?.slice(0, 2).toUpperCase() ?? "?"}
+            </div>
+          </div>
+        </div>
+        <main className="content">{children}</main>
+      </div>
     </div>
   );
 }
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 24,
-  padding: "12px 24px",
-  borderBottom: "1px solid #eee",
-};
-
-const navStyle: React.CSSProperties = {
-  textDecoration: "none",
-  color: "#333",
-  fontSize: 14,
-};
-
-const signOutStyle: React.CSSProperties = {
-  marginLeft: "auto",
-  background: "none",
-  border: "1px solid #ccc",
-  borderRadius: 6,
-  padding: "6px 12px",
-  cursor: "pointer",
-  fontSize: 13,
-};

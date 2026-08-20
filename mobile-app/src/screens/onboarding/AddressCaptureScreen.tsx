@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
+import { MapPin } from "lucide-react-native";
 import * as Location from "expo-location";
 import { saveAddress } from "@/lib/api";
+import { colors, fonts, radii } from "@/lib/theme";
+import { PrimaryButton, SecondaryButton } from "@/components/ui";
 
 export default function AddressCaptureScreen() {
   const [label, setLabel] = useState("Home");
@@ -31,9 +34,7 @@ export default function AddressCaptureScreen() {
     setCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
     if (place) {
       setFormattedAddress(
-        [place.name, place.street, place.city, place.postalCode]
-          .filter(Boolean)
-          .join(", ")
+        [place.name, place.street, place.city, place.postalCode].filter(Boolean).join(", ")
       );
     }
     setStatus({ kind: "idle" });
@@ -54,8 +55,6 @@ export default function AddressCaptureScreen() {
         return;
       }
       setStatus({ kind: "saved" });
-      // AddressContext's onSnapshot listener picks this up automatically;
-      // RootNavigator moves on once primaryAddress is set.
     } catch (e) {
       setStatus({
         kind: "error",
@@ -66,16 +65,19 @@ export default function AddressCaptureScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.crest}>
+        <MapPin size={24} color="#fff" />
+      </View>
       <Text style={styles.title}>Where should we deliver?</Text>
-      <Text style={styles.subtitle}>
-        We currently deliver within 5 km of Keelkattalai.
-      </Text>
+      <Text style={styles.subtitle}>We currently deliver within 5 km of Keelkattalai.</Text>
 
-      <Pressable style={styles.linkButton} onPress={handleUseCurrentLocation}>
-        <Text style={styles.linkButtonText}>
-          {status.kind === "locating" ? "Locating..." : "Use my current location"}
-        </Text>
-      </Pressable>
+      <SecondaryButton
+        onPress={handleUseCurrentLocation}
+        icon={<MapPin size={14} color={colors.accent} />}
+        style={{ marginBottom: 20, alignSelf: "flex-start" }}
+      >
+        {status.kind === "locating" ? "Locating..." : "Use my current location"}
+      </SecondaryButton>
 
       <Text style={styles.label}>Label</Text>
       <TextInput style={styles.input} value={label} onChangeText={setLabel} />
@@ -87,6 +89,7 @@ export default function AddressCaptureScreen() {
         onChangeText={setFormattedAddress}
         multiline
         placeholder="House no, street, area, city, pincode"
+        placeholderTextColor={colors.textMuted}
       />
 
       {status.kind === "outside" && (
@@ -100,43 +103,36 @@ export default function AddressCaptureScreen() {
         <Text style={styles.success}>Address saved — you're in our delivery area!</Text>
       )}
 
-      <Pressable
-        style={[styles.button, (!coords || status.kind === "saving") && styles.buttonDisabled]}
+      <PrimaryButton
         onPress={handleSave}
         disabled={!coords || status.kind === "saving"}
+        style={{ marginTop: 24 }}
       >
-        <Text style={styles.buttonText}>
-          {status.kind === "saving" ? "Saving..." : "Save address"}
-        </Text>
-      </Pressable>
+        {status.kind === "saving" ? "Saving..." : "Save address"}
+      </PrimaryButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, paddingTop: 64 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 4 },
-  subtitle: { fontSize: 14, color: "#555", marginBottom: 20 },
-  linkButton: { marginBottom: 20 },
-  linkButtonText: { color: "#2E7D32", fontWeight: "600", fontSize: 15 },
-  label: { fontSize: 13, color: "#333", marginBottom: 6, marginTop: 8 },
+  container: { flex: 1, padding: 24, paddingTop: 64, backgroundColor: colors.bg },
+  crest: {
+    width: 52, height: 52, borderRadius: 16, backgroundColor: colors.accent,
+    alignItems: "center", justifyContent: "center", marginBottom: 16,
+  },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.text, marginBottom: 4 },
+  subtitle: { fontSize: 14, fontFamily: fonts.sans, color: colors.textMuted, marginBottom: 20 },
+  label: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, marginBottom: 6, marginTop: 8 },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
     padding: 12,
     fontSize: 15,
+    fontFamily: fonts.sans,
+    color: colors.text,
   },
   multiline: { minHeight: 72, textAlignVertical: "top" },
-  error: { color: "#C62828", marginTop: 16 },
-  success: { color: "#2E7D32", marginTop: 16 },
-  button: {
-    backgroundColor: "#2E7D32",
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-    marginTop: 24,
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  error: { color: colors.danger, marginTop: 16, fontFamily: fonts.sans, fontSize: 13 },
+  success: { color: colors.accent, marginTop: 16, fontFamily: fonts.sans, fontSize: 13 },
 });

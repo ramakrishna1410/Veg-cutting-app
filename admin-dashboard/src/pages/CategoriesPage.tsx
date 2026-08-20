@@ -6,6 +6,7 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
+import { Plus } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { VegCategoryDoc } from "@/lib/domain";
 
@@ -55,94 +56,77 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <h1>Veg categories</h1>
+      <h1 className="page-title">Veg categories</h1>
+      <p className="page-sub">Recipe-based veggie mixes customers can subscribe to.</p>
 
-      <form onSubmit={handleCreate} style={{ maxWidth: 420, marginBottom: 32 }}>
-        <h3>Add category</h3>
-        <Field label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
-        <Field label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} />
-        <Field label="Image URL" value={form.imageUrl} onChange={(v) => setForm({ ...form, imageUrl: v })} />
-        <Field label="Items (comma separated)" value={form.items} onChange={(v) => setForm({ ...form, items: v })} />
-        <Field
-          label="Weekly price (INR)"
-          type="number"
-          value={String(form.priceWeekly)}
-          onChange={(v) => setForm({ ...form, priceWeekly: Number(v) })}
-        />
-        <Field
-          label="Monthly price (INR)"
-          type="number"
-          value={String(form.priceMonthly)}
-          onChange={(v) => setForm({ ...form, priceMonthly: Number(v) })}
-        />
-        <button type="submit" disabled={saving} style={buttonStyle}>
-          {saving ? "Saving..." : "Add category"}
-        </button>
-      </form>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 380px) 1fr", gap: 28, alignItems: "flex-start" }}>
+        <form onSubmit={handleCreate} className="card">
+          <h3 className="section-title">Add category</h3>
+          <div className="field">
+            <label>Name</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </div>
+          <div className="field">
+            <label>Description</label>
+            <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Image URL</label>
+            <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Items (comma separated)</label>
+            <input value={form.items} onChange={(e) => setForm({ ...form, items: e.target.value })} placeholder="Onion, Carrot, Beans" />
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Weekly price (₹)</label>
+              <input type="number" value={form.priceWeekly} onChange={(e) => setForm({ ...form, priceWeekly: Number(e.target.value) })} />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Monthly price (₹)</label>
+              <input type="number" value={form.priceMonthly} onChange={(e) => setForm({ ...form, priceMonthly: Number(e.target.value) })} />
+            </div>
+          </div>
+          <button type="submit" disabled={saving} className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+            <Plus size={16} /> {saving ? "Saving..." : "Add category"}
+          </button>
+        </form>
 
-      <table style={tableStyle}>
-        <thead>
-          <tr>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Items</th>
-            <th style={thStyle}>Weekly</th>
-            <th style={thStyle}>Monthly</th>
-            <th style={thStyle}>Active</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((c) => (
-            <tr key={c.id}>
-              <td style={tdStyle}>{c.name}</td>
-              <td style={tdStyle}>{c.items.join(", ")}</td>
-              <td style={tdStyle}>₹{c.priceWeekly}</td>
-              <td style={tdStyle}>₹{c.priceMonthly}</td>
-              <td style={tdStyle}>
-                <input type="checkbox" checked={c.active} onChange={() => toggleActive(c)} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Items</th>
+                <th>Weekly</th>
+                <th>Monthly</th>
+                <th>Active</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((c) => (
+                <tr key={c.id}>
+                  <td style={{ fontWeight: 600 }}>{c.name}</td>
+                  <td style={{ color: "var(--text-muted)" }}>{c.items.join(", ")}</td>
+                  <td>₹{c.priceWeekly}</td>
+                  <td>₹{c.priceMonthly}</td>
+                  <td>
+                    <input type="checkbox" checked={c.active} onChange={() => toggleActive(c)} />
+                  </td>
+                </tr>
+              ))}
+              {categories.length === 0 && (
+                <tr>
+                  <td colSpan={5}>
+                    <div className="empty-state">No categories yet — add your first one.</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
-
-function Field({
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <label style={{ display: "block", fontSize: 12, marginBottom: 4 }}>{label}</label>
-      <input
-        style={{ width: "100%", padding: 8, boxSizing: "border-box", border: "1px solid #ccc", borderRadius: 6 }}
-        type={type}
-        value={value}
-        required={required}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-}
-
-const buttonStyle: React.CSSProperties = {
-  padding: "10px 16px",
-  backgroundColor: "#2E7D32",
-  color: "#fff",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer",
-};
-const tableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse" };
-const thStyle: React.CSSProperties = { textAlign: "left", borderBottom: "1px solid #ddd", padding: 8, fontSize: 13 };
-const tdStyle: React.CSSProperties = { borderBottom: "1px solid #f0f0f0", padding: 8, fontSize: 13 };

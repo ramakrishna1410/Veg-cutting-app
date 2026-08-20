@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Leaf, Lock, Mail } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
@@ -22,56 +23,60 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 360, margin: "80px auto", fontFamily: "system-ui, sans-serif" }}>
-      <h1 style={{ color: "#2E7D32" }}>Veg Cutting App — Admin</h1>
-      <form onSubmit={handleSubmit}>
-        <label style={{ display: "block", marginTop: 16, fontSize: 13 }}>Email</label>
-        <input
-          style={inputStyle}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <label style={{ display: "block", marginTop: 16, fontSize: 13 }}>Password</label>
-        <input
-          style={inputStyle}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <p style={{ color: "#C62828", fontSize: 13 }}>{error}</p>}
-        <button style={buttonStyle} type="submit" disabled={submitting}>
-          {submitting ? "Signing in..." : "Sign in"}
-        </button>
-      </form>
-      <p style={{ fontSize: 12, color: "#777", marginTop: 16 }}>
-        This account must have an admin or delivery role assigned in Firestore
-        (users/&#123;uid&#125;.role).
-      </p>
+    <div className="auth-screen">
+      <div className="auth-card">
+        <div className="auth-crest">
+          <Leaf size={26} />
+        </div>
+        <div className="auth-title">Veg Cutting App</div>
+        <div className="auth-subtitle">Admin &amp; delivery console</div>
+
+        <form onSubmit={handleSubmit}>
+          {error && <div className="auth-error">{error}</div>}
+          <div className="field">
+            <label>Email</label>
+            <div style={{ position: "relative" }}>
+              <Mail size={16} style={iconStyle} />
+              <input
+                style={{ paddingLeft: 38 }}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label>Password</label>
+            <div style={{ position: "relative" }}>
+              <Lock size={16} style={iconStyle} />
+              <input
+                style={{ paddingLeft: 38 }}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <button className="btn-primary" style={{ width: "100%", justifyContent: "center" }} type="submit" disabled={submitting}>
+            {submitting ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <p className="auth-note">
+          This account needs an admin or delivery role assigned in Firestore
+          (users/&#123;uid&#125;.role) before it can sign in here.
+        </p>
+      </div>
     </div>
   );
 }
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: 10,
-  fontSize: 14,
-  border: "1px solid #ccc",
-  borderRadius: 6,
-  boxSizing: "border-box",
-};
-
-const buttonStyle: React.CSSProperties = {
-  marginTop: 24,
-  width: "100%",
-  padding: 12,
-  fontSize: 15,
-  fontWeight: 600,
-  color: "#fff",
-  backgroundColor: "#2E7D32",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer",
+const iconStyle: React.CSSProperties = {
+  position: "absolute",
+  left: 12,
+  top: "50%",
+  transform: "translateY(-50%)",
+  color: "var(--text-muted)",
 };

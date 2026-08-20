@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
+import { Search } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { SubscriptionDoc, UserDoc, VegCategoryDoc } from "@/lib/domain";
 
@@ -35,44 +36,69 @@ export default function SubscriptionsPage() {
     const name = users[s.uid]?.name ?? "";
     return name.toLowerCase().includes(search.toLowerCase());
   });
+  const activeCount = subs.filter((s) => s.status === "active").length;
 
   return (
     <div>
-      <h1>Subscriptions</h1>
-      <input
-        placeholder="Search by customer name..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ padding: 8, marginBottom: 16, width: 280, border: "1px solid #ccc", borderRadius: 6 }}
-      />
-      <table style={tableStyle}>
-        <thead>
-          <tr>
-            <th style={thStyle}>Customer</th>
-            <th style={thStyle}>Category</th>
-            <th style={thStyle}>Plan</th>
-            <th style={thStyle}>Slot</th>
-            <th style={thStyle}>Status</th>
-            <th style={thStyle}>Next delivery</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((s) => (
-            <tr key={s.id}>
-              <td style={tdStyle}>{users[s.uid]?.name ?? s.uid}</td>
-              <td style={tdStyle}>{categories[s.categoryId]?.name ?? s.categoryId}</td>
-              <td style={tdStyle}>{s.plan}</td>
-              <td style={tdStyle}>{s.slot === "morning" ? "5–8 AM" : "5–8 PM"}</td>
-              <td style={tdStyle}>{s.status}</td>
-              <td style={tdStyle}>{new Date(s.nextDeliveryDate).toLocaleDateString("en-IN")}</td>
+      <h1 className="page-title">Subscriptions</h1>
+      <p className="page-sub">Weekly and monthly veggie subscriptions across all customers.</p>
+
+      <div className="stat-row">
+        <div className="stat-card">
+          <div className="stat-num">{subs.length}</div>
+          <div className="stat-label">Total subscriptions</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num">{activeCount}</div>
+          <div className="stat-label">Active</div>
+        </div>
+      </div>
+
+      <div className="field" style={{ maxWidth: 320, position: "relative", marginBottom: 16 }}>
+        <Search size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted)" }} />
+        <input
+          placeholder="Search by customer name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ paddingLeft: 36 }}
+        />
+      </div>
+
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Category</th>
+              <th>Plan</th>
+              <th>Slot</th>
+              <th>Status</th>
+              <th>Next delivery</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filtered.map((s) => (
+              <tr key={s.id}>
+                <td style={{ fontWeight: 600 }}>{users[s.uid]?.name ?? s.uid}</td>
+                <td>{categories[s.categoryId]?.name ?? s.categoryId}</td>
+                <td style={{ textTransform: "capitalize" }}>{s.plan}</td>
+                <td>{s.slot === "morning" ? "5–8 AM" : "5–8 PM"}</td>
+                <td>
+                  <span className={`chip chip-${s.status}`}>{s.status}</span>
+                </td>
+                <td>{new Date(s.nextDeliveryDate).toLocaleDateString("en-IN")}</td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6}>
+                  <div className="empty-state">No subscriptions match.</div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
-
-const tableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse" };
-const thStyle: React.CSSProperties = { textAlign: "left", borderBottom: "1px solid #ddd", padding: 8, fontSize: 13 };
-const tdStyle: React.CSSProperties = { borderBottom: "1px solid #f0f0f0", padding: 8, fontSize: 13 };

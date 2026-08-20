@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, query, updateDoc, where } from "firebase/firestore";
+import { MapPin, Truck, CheckCircle2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { istMidnightMillis } from "@/lib/dateUtils";
@@ -50,27 +51,36 @@ export default function DeliveryViewPage() {
 
   return (
     <div>
-      <h1>My deliveries today</h1>
-      {orders.length === 0 && <p>No deliveries assigned to you for today.</p>}
-      <div style={{ display: "grid", gap: 12, maxWidth: 560 }}>
+      <h1 className="page-title">My deliveries today</h1>
+      <p className="page-sub">Orders assigned to you for today's slots.</p>
+
+      {orders.length === 0 && <div className="empty-state">No deliveries assigned to you for today.</div>}
+
+      <div style={{ display: "grid", gap: 14, maxWidth: 560 }}>
         {orders.map((o) => (
-          <div key={o.id} style={cardStyle}>
-            <strong>{categories[o.categoryId]?.name ?? o.categoryId}</strong>
-            <div style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
+          <div key={o.id} className="card-soft">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <strong style={{ fontFamily: "'Newsreader', serif", fontSize: 16 }}>
+                {categories[o.categoryId]?.name ?? o.categoryId}
+              </strong>
+              <span className={`chip chip-${o.status}`}>{o.status.replace(/_/g, " ")}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginTop: 10, fontSize: 13, color: "var(--text)" }}>
+              <MapPin size={14} style={{ marginTop: 2, flexShrink: 0, color: "var(--text-muted)" }} />
               {addresses[o.addressId]?.formattedAddress ?? "Address unavailable"}
             </div>
-            <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
-              {o.slot === "morning" ? "5–8 AM" : "5–8 PM"} · {o.status}
+            <div className="eyebrow" style={{ marginTop: 8 }}>
+              {o.slot === "morning" ? "5–8 AM" : "5–8 PM"}
             </div>
-            <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
               {o.status === "confirmed" && (
-                <button style={btnStyle} onClick={() => markOutForDelivery(o.id)}>
-                  Out for delivery
+                <button className="btn-secondary" onClick={() => markOutForDelivery(o.id)}>
+                  <Truck size={14} /> Out for delivery
                 </button>
               )}
               {o.status !== "delivered" && (
-                <button style={btnStyle} onClick={() => markDelivered(o.id)}>
-                  Mark delivered
+                <button className="btn-secondary" onClick={() => markDelivered(o.id)}>
+                  <CheckCircle2 size={14} /> Mark delivered
                 </button>
               )}
             </div>
@@ -80,19 +90,3 @@ export default function DeliveryViewPage() {
     </div>
   );
 }
-
-const cardStyle: React.CSSProperties = {
-  border: "1px solid #eee",
-  borderRadius: 10,
-  padding: 14,
-  backgroundColor: "#F1F8E9",
-};
-const btnStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  fontSize: 13,
-  border: "1px solid #2E7D32",
-  borderRadius: 6,
-  backgroundColor: "#fff",
-  color: "#2E7D32",
-  cursor: "pointer",
-};

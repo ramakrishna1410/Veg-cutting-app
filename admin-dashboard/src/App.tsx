@@ -21,10 +21,19 @@ export default function App() {
 function Gate() {
   const { firebaseUser, appUser, loading } = useAuth();
 
-  if (loading) return <p style={{ padding: 24 }}>Loading...</p>;
+  if (loading) {
+    return <div className="auth-screen"><span className="eyebrow">Loading...</span></div>;
+  }
   if (!firebaseUser || !appUser) return <LoginPage />;
   if (appUser.role !== "admin" && appUser.role !== "delivery") {
-    return <p style={{ padding: 24 }}>This account doesn't have admin or delivery access.</p>;
+    return (
+      <div className="auth-screen">
+        <div className="auth-card" style={{ textAlign: "center" }}>
+          <div className="auth-title">No access yet</div>
+          <p className="auth-subtitle">This account doesn't have admin or delivery access.</p>
+        </div>
+      </div>
+    );
   }
 
   const isAdmin = appUser.role === "admin";

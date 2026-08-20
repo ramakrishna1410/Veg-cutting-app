@@ -5,6 +5,8 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useCategories } from "@/context/CategoriesContext";
 import { OrderDoc } from "@/lib/domain";
+import { colors, fonts } from "@/lib/theme";
+import { Card, Chip } from "@/components/ui";
 
 export default function OrdersScreen() {
   const { appUser } = useAuth();
@@ -31,16 +33,16 @@ export default function OrdersScreen() {
         data={orders}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {getCategory(item.categoryId)?.name ?? item.categoryId}
-            </Text>
+          <Card>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <Text style={styles.cardTitle}>{getCategory(item.categoryId)?.name ?? item.categoryId}</Text>
+              <Chip status={item.status} />
+            </View>
             <Text style={styles.cardSub}>
               {new Date(item.deliveryDate).toLocaleDateString("en-IN")} ·{" "}
               {item.slot === "morning" ? "5–8 AM" : "5–8 PM"}
             </Text>
-            <Text style={styles.status}>{item.status.replace(/_/g, " ")}</Text>
-          </View>
+          </Card>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       />
@@ -49,11 +51,9 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 16 },
-  empty: { color: "#777" },
-  card: { backgroundColor: "#F1F8E9", borderRadius: 12, padding: 16 },
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#33691E" },
-  cardSub: { fontSize: 13, color: "#555", marginTop: 4 },
-  status: { fontSize: 12, color: "#2E7D32", marginTop: 6, textTransform: "capitalize", fontWeight: "600" },
+  container: { flex: 1, padding: 20, paddingTop: 56, backgroundColor: colors.bg },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.text, marginBottom: 16 },
+  empty: { color: colors.textMuted, fontFamily: fonts.sans },
+  cardTitle: { fontSize: 16, fontFamily: fonts.serifMedium, color: colors.text, flexShrink: 1, marginRight: 8 },
+  cardSub: { fontSize: 13, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 6 },
 });
