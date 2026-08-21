@@ -20,6 +20,7 @@ export interface AppUser {
   role: UserRole;
   name: string;
   phone: string;
+  email?: string;
 }
 
 interface AuthContextValue {
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       role: "customer",
       name,
       phone: firebaseUser.phoneNumber ?? "",
+      ...(firebaseUser.email ? { email: firebaseUser.email } : {}),
     };
     await setDoc(doc(db, "users", firebaseUser.uid), {
       ...newUser,

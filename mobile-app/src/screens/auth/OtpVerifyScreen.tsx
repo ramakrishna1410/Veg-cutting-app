@@ -9,7 +9,7 @@ import { PrimaryButton } from "@/components/ui";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "OtpVerify">;
 
-export default function OtpVerifyScreen({ route }: Props) {
+export default function OtpVerifyScreen({ route, navigation }: Props) {
   const { verificationId, phone } = route.params;
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -21,6 +21,12 @@ export default function OtpVerifyScreen({ route }: Props) {
     try {
       const credential = PhoneAuthProvider.credential(verificationId, code);
       await signInWithCredential(auth, credential);
+      // For an existing customer, AuthContext resolves their Firestore
+      // profile shortly and RootNavigator swaps away from this stack
+      // entirely. For a brand-new phone number there's no profile yet, so
+      // explicitly advance to CompleteProfile — harmless no-op (a quick
+      // flash) if this turns out to be an existing user.
+      navigation.replace("CompleteProfile");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid code.");
     } finally {
