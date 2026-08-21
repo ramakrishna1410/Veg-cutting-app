@@ -1,9 +1,13 @@
+import { Platform } from "react-native";
 import { initializeApp, getApps } from "firebase/app";
-import { initializeAuth } from "firebase/auth";
+import { getAuth, initializeAuth } from "firebase/auth";
 // getReactNativePersistence is exported from firebase/auth's React Native
-// build (resolved by Metro via the package.json "react-native" field), but
-// the plain `tsc` module resolution used by `npm run typecheck` doesn't
-// apply that field, so its type declaration isn't visible there — harmless.
+// build only (resolved by Metro via the package.json "react-native" field
+// on iOS/Android). On web that field isn't used, so this import comes back
+// undefined there — never call it outside the Platform.OS !== "web" branch
+// below. The plain `tsc` module resolution used by `npm run typecheck` also
+// doesn't apply the "react-native" field, so its type declaration isn't
+// visible there either — harmless, hence the ts-expect-error.
 // @ts-expect-error - see note above
 import { getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -21,9 +25,12 @@ const firebaseConfig = {
 
 export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// Web falls back to Firebase's default browser persistence (IndexedDB/localStorage);
+// only native (iOS/Android) needs the explicit AsyncStorage-backed persistence.
+export const auth =
+  Platform.OS === "web"
+    ? getAuth(app)
+    : initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
 
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
