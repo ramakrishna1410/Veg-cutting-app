@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
-import { Leaf } from "lucide-react-native";
+import { Platform, View, Text, TextInput, StyleSheet } from "react-native";
+import { Leaf, Smartphone } from "lucide-react-native";
 import { signInWithPhoneNumber } from "firebase/auth";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -33,6 +33,25 @@ export default function PhoneLoginScreen({ navigation }: Props) {
     } finally {
       setSending(false);
     }
+  }
+
+  // expo-firebase-recaptcha's web build depends on Firebase's older "compat"
+  // SDK being separately initialized, which this app doesn't do (it uses the
+  // modern modular SDK everywhere else) — so phone OTP login isn't supported
+  // in the browser. Point testers at Expo Go instead of crashing.
+  if (Platform.OS === "web") {
+    return (
+      <View style={styles.container}>
+        <View style={styles.crest}>
+          <Smartphone size={26} color="#fff" />
+        </View>
+        <Text style={styles.title}>Veg Cutting App</Text>
+        <Text style={styles.subtitle}>
+          Phone sign-in isn't available in the browser yet. Open this app in Expo Go on
+          your phone to sign in and test the full flow.
+        </Text>
+      </View>
+    );
   }
 
   return (
