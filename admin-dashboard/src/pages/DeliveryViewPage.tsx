@@ -52,7 +52,7 @@ export default function DeliveryViewPage() {
           <div key={o.id} className="card-soft">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <strong style={{ fontFamily: "'Newsreader', serif", fontSize: 16 }}>
-                {o.items.map((item) => `${item.categoryName} ×${item.quantity}`).join(", ")}
+                {o.items.map((item) => `${item.menuItemName} ×${item.quantity}`).join(", ")}
               </strong>
               <span className={`chip chip-${o.status}`}>{o.status.replace(/_/g, " ")}</span>
             </div>

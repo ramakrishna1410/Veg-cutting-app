@@ -26,7 +26,7 @@ export default function CheckoutScreen({ route, navigation }: Props) {
     setPlacing(true);
     try {
       await createOrder({
-        items: lines.map((l) => ({ categoryId: l.categoryId, quantity: l.quantity })),
+        items: lines.map((l) => ({ menuItemId: l.menuItemId, quantity: l.quantity })),
         slot,
         addressId: primaryAddress.id,
         paymentMethod: "cod",
@@ -46,7 +46,7 @@ export default function CheckoutScreen({ route, navigation }: Props) {
 
       <SoftCard>
         {lines.map((line) => (
-          <View key={line.categoryId} style={styles.itemRow}>
+          <View key={line.menuItemId} style={styles.itemRow}>
             <Text style={styles.itemName}>{line.name} ×{line.quantity}</Text>
             <Text style={styles.itemPrice}>₹{line.unitPrice * line.quantity}</Text>
           </View>

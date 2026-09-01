@@ -16,7 +16,8 @@ export type MainTabParamList = {
 };
 
 export type RootStackParamList = {
-  CategoryDetail: { categoryId: string };
+  MenuList: { categoryId: string };
+  MenuItemDetail: { menuItemId: string };
   SlotPicker: undefined;
   Checkout: { slot: "morning" | "evening" };
 };

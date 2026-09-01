@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from "react";
 import { NavLink } from "react-router-dom";
 import {
   ClipboardList,
+  FolderTree,
   Leaf,
   Truck,
   LogOut,
@@ -10,7 +11,8 @@ import { useAuth } from "@/context/AuthContext";
 
 const ADMIN_NAV = [
   { to: "/orders", label: "Today's Orders", icon: ClipboardList },
-  { to: "/categories", label: "Categories", icon: Leaf },
+  { to: "/categories", label: "Categories", icon: FolderTree },
+  { to: "/menu-items", label: "Menu Items", icon: Leaf },
 ];
 
 export default function Layout({ children }: PropsWithChildren) {

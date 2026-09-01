@@ -34,7 +34,7 @@ export default function OrdersScreen() {
           <Card>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
               <Text style={styles.cardTitle}>
-                {item.items.map((i) => `${i.categoryName} ×${i.quantity}`).join(", ")}
+                {item.items.map((i) => `${i.menuItemName} ×${i.quantity}`).join(", ")}
               </Text>
               <Chip status={item.status} />
             </View>

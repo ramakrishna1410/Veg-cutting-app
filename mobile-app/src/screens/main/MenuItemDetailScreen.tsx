@@ -2,42 +2,42 @@ import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Minus, Plus } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCategories } from "@/context/CategoriesContext";
+import { useMenuItems } from "@/context/MenuItemsContext";
 import { useCart } from "@/context/CartContext";
 import { RootStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
 import { PrimaryButton, Card } from "@/components/ui";
 
-type Props = NativeStackScreenProps<RootStackParamList, "CategoryDetail">;
+type Props = NativeStackScreenProps<RootStackParamList, "MenuItemDetail">;
 
-export default function CategoryDetailScreen({ route, navigation }: Props) {
-  const { getCategory } = useCategories();
+export default function MenuItemDetailScreen({ route, navigation }: Props) {
+  const { getMenuItem } = useMenuItems();
   const { lines, setQuantity } = useCart();
-  const category = getCategory(route.params.categoryId);
-  const existingLine = lines.find((l) => l.categoryId === route.params.categoryId);
+  const menuItem = getMenuItem(route.params.menuItemId);
+  const existingLine = lines.find((l) => l.menuItemId === route.params.menuItemId);
   const [qty, setQty] = useState(existingLine?.quantity ?? 1);
 
-  if (!category) {
+  if (!menuItem) {
     return (
       <View style={styles.container}>
-        <Text style={{ fontFamily: fonts.sans, color: colors.text }}>Category not found.</Text>
+        <Text style={{ fontFamily: fonts.sans, color: colors.text }}>Item not found.</Text>
       </View>
     );
   }
 
   function handleAddToCart() {
-    setQuantity(category!.id, category!.name, category!.price, qty);
+    setQuantity(menuItem!.id, qty);
     navigation.goBack();
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{category.name}</Text>
-      <Text style={styles.description}>{category.description}</Text>
+      <Text style={styles.title}>{menuItem.name}</Text>
+      <Text style={styles.description}>{menuItem.description}</Text>
 
       <Text style={styles.sectionLabel}>Includes</Text>
       <Card style={{ marginBottom: 20 }}>
-        {category.items.map((item, i) => (
+        {menuItem.items.map((item, i) => (
           <Text key={item} style={[styles.item, i > 0 && { marginTop: 6 }]}>
             • {item}
           </Text>
@@ -47,7 +47,7 @@ export default function CategoryDetailScreen({ route, navigation }: Props) {
       <View style={styles.pricingBox}>
         <View>
           <Text style={styles.pricingLabel}>Price per pack</Text>
-          <Text style={styles.pricingValue}>₹{category.price}</Text>
+          <Text style={styles.pricingValue}>₹{menuItem.price}</Text>
         </View>
         <View style={styles.stepper}>
           <Pressable
@@ -64,7 +64,7 @@ export default function CategoryDetailScreen({ route, navigation }: Props) {
       </View>
 
       <PrimaryButton style={{ marginTop: 28 }} onPress={handleAddToCart}>
-        Add {qty} to cart — ₹{category.price * qty}
+        Add {qty} to cart — ₹{menuItem.price * qty}
       </PrimaryButton>
     </View>
   );

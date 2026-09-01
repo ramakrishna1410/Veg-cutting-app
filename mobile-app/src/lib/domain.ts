@@ -13,8 +13,16 @@ export type OrderStatus =
 export type PaymentMethod = "cod" | "online";
 export type PaymentStatus = "cod_pending" | "cod_collected" | "online_paid";
 
-export interface VegCategoryDoc {
+export interface CategoryDoc {
   id: string;
+  name: string;
+  sortOrder: number;
+  active: boolean;
+}
+
+export interface MenuItemDoc {
+  id: string;
+  categoryId: string;
   name: string;
   description: string;
   imageUrl: string;
@@ -36,8 +44,8 @@ export interface AddressDoc {
 }
 
 export interface OrderItem {
-  categoryId: string;
-  categoryName: string;
+  menuItemId: string;
+  menuItemName: string;
   quantity: number;
   unitPrice: number;
 }

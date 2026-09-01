@@ -34,32 +34,46 @@ export const DEFAULT_DELIVERY_FEE: DeliveryFeeConfig = {
   flatDeliveryFee: 25,
 };
 
-export const VEG_CATEGORY_SEED = [
+// Reference only (not auto-seeded) — the shape to recreate by hand in the
+// admin dashboard: a few top-level categories, each with a few menu items.
+export const CATEGORY_SEED = [
+  { name: "Poriyal", sortOrder: 1 },
+  { name: "Kootu", sortOrder: 2 },
+  { name: "Rice Veggies", sortOrder: 3 },
+  { name: "Miscellaneous", sortOrder: 4 },
+] as const;
+
+export const MENU_ITEM_SEED = [
   {
+    categoryName: "Rice Veggies",
     name: "Biryani Veggies",
     description: "Onion, carrot, beans, potato — cut and ready for biryani.",
     items: ["Onion", "Carrot", "Beans", "Potato"],
     price: 89,
   },
   {
+    categoryName: "Rice Veggies",
     name: "Fried Rice Veggies",
     description: "Finely diced mixed veg for fried rice / noodles.",
     items: ["Carrot", "Beans", "Capsicum", "Cabbage", "Spring Onion"],
     price: 79,
   },
   {
+    categoryName: "Kootu",
     name: "Sambar Veggies",
     description: "Classic sambar mix, chopped.",
     items: ["Drumstick", "Brinjal", "Pumpkin", "Carrot", "Onion", "Tomato"],
     price: 75,
   },
   {
+    categoryName: "Kootu",
     name: "Tiffin Sambar Veggies",
     description: "Lighter mix for idli/dosa-side tiffin sambar.",
     items: ["Onion", "Tomato", "Carrot", "Drumstick"],
     price: 65,
   },
   {
+    categoryName: "Poriyal",
     name: "Veg Fry Mix",
     description: "Sliced veg for a quick stir-fry / poriyal.",
     items: ["Beans", "Carrot", "Cabbage", "Potato"],

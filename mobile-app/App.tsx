@@ -8,6 +8,7 @@ import { useFonts as useMono, IBMPlexMono_600SemiBold } from "@expo-google-fonts
 import { AuthProvider } from "@/context/AuthContext";
 import { AddressProvider } from "@/context/AddressContext";
 import { CategoriesProvider } from "@/context/CategoriesContext";
+import { MenuItemsProvider } from "@/context/MenuItemsContext";
 import { CartProvider } from "@/context/CartContext";
 import RootNavigator from "@/navigation/RootNavigator";
 import { colors } from "@/lib/theme";
@@ -30,10 +31,12 @@ export default function App() {
       <AuthProvider>
         <AddressProvider>
           <CategoriesProvider>
-            <CartProvider>
-              <StatusBar style="dark" />
-              <RootNavigator />
-            </CartProvider>
+            <MenuItemsProvider>
+              <CartProvider>
+                <StatusBar style="dark" />
+                <RootNavigator />
+              </CartProvider>
+            </MenuItemsProvider>
           </CategoriesProvider>
         </AddressProvider>
       </AuthProvider>

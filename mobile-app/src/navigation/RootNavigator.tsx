@@ -9,7 +9,8 @@ import OtpVerifyScreen from "@/screens/auth/OtpVerifyScreen";
 import CompleteProfileScreen from "@/screens/auth/CompleteProfileScreen";
 import AddressCaptureScreen from "@/screens/onboarding/AddressCaptureScreen";
 import MainTabs from "@/navigation/MainTabs";
-import CategoryDetailScreen from "@/screens/main/CategoryDetailScreen";
+import MenuListScreen from "@/screens/main/MenuListScreen";
+import MenuItemDetailScreen from "@/screens/main/MenuItemDetailScreen";
 import SlotPickerScreen from "@/screens/main/SlotPickerScreen";
 import CheckoutScreen from "@/screens/main/CheckoutScreen";
 import { colors } from "@/lib/theme";
@@ -54,8 +55,13 @@ function MainNavigator() {
     <RootStack.Navigator>
       <RootStack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
       <RootStack.Screen
-        name="CategoryDetail"
-        component={CategoryDetailScreen}
+        name="MenuList"
+        component={MenuListScreen}
+        options={{ title: "" }}
+      />
+      <RootStack.Screen
+        name="MenuItemDetail"
+        component={MenuItemDetailScreen}
         options={{ title: "" }}
       />
       <RootStack.Screen

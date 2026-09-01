@@ -4,7 +4,7 @@ import { loadBookingWindows, loadDeliveryFee } from "./config";
 import { DeliverySlot, PaymentMethod, isSlotBookable, nextDeliveryDateForSlot } from "./domain";
 
 interface CartItemInput {
-  categoryId: string;
+  menuItemId: string;
   quantity: number;
 }
 
@@ -44,8 +44,8 @@ export const createOrder = onCall<CreateOrderRequest>(async (request) => {
     );
   }
   for (const item of items) {
-    if (!item.categoryId || !Number.isInteger(item.quantity) || item.quantity < 1) {
-      throw new HttpsError("invalid-argument", "Each item needs a categoryId and a positive quantity.");
+    if (!item.menuItemId || !Number.isInteger(item.quantity) || item.quantity < 1) {
+      throw new HttpsError("invalid-argument", "Each item needs a menuItemId and a positive quantity.");
     }
   }
 
@@ -71,21 +71,21 @@ export const createOrder = onCall<CreateOrderRequest>(async (request) => {
     );
   }
 
-  const categorySnaps = await Promise.all(
-    items.map((item) => db.doc(`vegCategories/${item.categoryId}`).get())
+  const menuItemSnaps = await Promise.all(
+    items.map((item) => db.doc(`menuItems/${item.menuItemId}`).get())
   );
 
   const orderItems = items.map((item, i) => {
-    const snap = categorySnaps[i];
-    const category = snap.data();
-    if (!snap.exists || category?.active !== true) {
-      throw new HttpsError("not-found", `Category ${item.categoryId} not found or inactive.`);
+    const snap = menuItemSnaps[i];
+    const menuItem = snap.data();
+    if (!snap.exists || menuItem?.active !== true) {
+      throw new HttpsError("not-found", `Menu item ${item.menuItemId} not found or inactive.`);
     }
     return {
-      categoryId: item.categoryId,
-      categoryName: category!.name as string,
+      menuItemId: item.menuItemId,
+      menuItemName: menuItem!.name as string,
       quantity: item.quantity,
-      unitPrice: category!.price as number,
+      unitPrice: menuItem!.price as number,
     };
   });
 

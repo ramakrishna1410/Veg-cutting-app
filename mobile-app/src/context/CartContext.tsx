@@ -5,11 +5,11 @@ import React, {
   useMemo,
   PropsWithChildren,
 } from "react";
-import { useCategories } from "@/context/CategoriesContext";
+import { useMenuItems } from "@/context/MenuItemsContext";
 import { FREE_DELIVERY_THRESHOLD, FLAT_DELIVERY_FEE } from "@/lib/domain";
 
 export interface CartLine {
-  categoryId: string;
+  menuItemId: string;
   name: string;
   unitPrice: number;
   quantity: number;
@@ -17,8 +17,8 @@ export interface CartLine {
 
 interface CartContextValue {
   lines: CartLine[];
-  setQuantity: (categoryId: string, name: string, unitPrice: number, quantity: number) => void;
-  removeLine: (categoryId: string) => void;
+  setQuantity: (menuItemId: string, quantity: number) => void;
+  removeLine: (menuItemId: string) => void;
   clear: () => void;
   subtotal: number;
   deliveryFee: number;
@@ -30,23 +30,23 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: PropsWithChildren) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const { categories } = useCategories();
+  const { menuItems } = useMenuItems();
 
-  function setQuantity(categoryId: string, _name: string, _unitPrice: number, quantity: number) {
+  function setQuantity(menuItemId: string, quantity: number) {
     setQuantities((prev) => {
       if (quantity <= 0) {
         const next = { ...prev };
-        delete next[categoryId];
+        delete next[menuItemId];
         return next;
       }
-      return { ...prev, [categoryId]: quantity };
+      return { ...prev, [menuItemId]: quantity };
     });
   }
 
-  function removeLine(categoryId: string) {
+  function removeLine(menuItemId: string) {
     setQuantities((prev) => {
       const next = { ...prev };
-      delete next[categoryId];
+      delete next[menuItemId];
       return next;
     });
   }
@@ -57,13 +57,13 @@ export function CartProvider({ children }: PropsWithChildren) {
 
   const lines = useMemo<CartLine[]>(() => {
     return Object.entries(quantities)
-      .map(([categoryId, quantity]) => {
-        const category = categories.find((c) => c.id === categoryId);
-        if (!category) return null;
-        return { categoryId, name: category.name, unitPrice: category.price, quantity };
+      .map(([menuItemId, quantity]) => {
+        const menuItem = menuItems.find((m) => m.id === menuItemId);
+        if (!menuItem) return null;
+        return { menuItemId, name: menuItem.name, unitPrice: menuItem.price, quantity };
       })
       .filter((line): line is CartLine => line !== null);
-  }, [quantities, categories]);
+  }, [quantities, menuItems]);
 
   const subtotal = lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
   const deliveryFee = subtotal === 0 || subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : FLAT_DELIVERY_FEE;

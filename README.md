@@ -59,8 +59,10 @@ for the exact default values used if they're missing):
 - `config/bookingWindows`
 - `config/serviceArea`
 
-Also seed a few `vegCategories` docs, either by hand in the console or from the
-admin dashboard once it's running.
+Also add a few `categories` (e.g. Poriyal, Kootu, Rice Veggies) and, within
+each, a few `menuItems` (e.g. Biryani Veggies under Rice Veggies) — either by
+hand in the console or from the admin dashboard's Categories and Menu Items
+pages once it's running.
 
 ### 4. Mobile app (customer)
 

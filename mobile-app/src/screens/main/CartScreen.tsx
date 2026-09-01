@@ -28,12 +28,12 @@ export default function CartScreen() {
 
       <FlatList
         data={lines}
-        keyExtractor={(item) => item.categoryId}
+        keyExtractor={(item) => item.menuItemId}
         renderItem={({ item }) => (
           <CartRow
             line={item}
-            onQtyChange={(q) => setQuantity(item.categoryId, item.name, item.unitPrice, q)}
-            onRemove={() => removeLine(item.categoryId)}
+            onQtyChange={(q) => setQuantity(item.menuItemId, q)}
+            onRemove={() => removeLine(item.menuItemId)}
           />
         )}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

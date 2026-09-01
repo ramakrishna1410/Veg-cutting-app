@@ -131,7 +131,7 @@ function SlotBoard({
             {orders.map((o) => (
               <tr key={o.id}>
                 <td style={{ fontWeight: 600 }}>
-                  {o.items.map((item) => `${item.categoryName} ×${item.quantity}`).join(", ")}
+                  {o.items.map((item) => `${item.menuItemName} ×${item.quantity}`).join(", ")}
                 </td>
                 <td>
                   ₹{o.total}

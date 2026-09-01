@@ -19,7 +19,7 @@ export async function saveAddress(input: {
 }
 
 export async function createOrder(input: {
-  items: { categoryId: string; quantity: number }[];
+  items: { menuItemId: string; quantity: number }[];
   slot: DeliverySlot;
   addressId: string;
   paymentMethod: PaymentMethod;

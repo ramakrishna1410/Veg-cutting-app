@@ -5,26 +5,30 @@ import React, {
   useState,
   PropsWithChildren,
 } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { VegCategoryDoc } from "@/lib/domain";
+import { CategoryDoc } from "@/lib/domain";
 
 interface CategoriesContextValue {
-  categories: VegCategoryDoc[];
+  categories: CategoryDoc[];
   loading: boolean;
-  getCategory: (id: string) => VegCategoryDoc | undefined;
+  getCategory: (id: string) => CategoryDoc | undefined;
 }
 
 const CategoriesContext = createContext<CategoriesContextValue | undefined>(undefined);
 
 export function CategoriesProvider({ children }: PropsWithChildren) {
-  const [categories, setCategories] = useState<VegCategoryDoc[]>([]);
+  const [categories, setCategories] = useState<CategoryDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "vegCategories"), where("active", "==", true));
+    const q = query(
+      collection(db, "categories"),
+      where("active", "==", true),
+      orderBy("sortOrder", "asc")
+    );
     return onSnapshot(q, (snap) => {
-      setCategories(snap.docs.map((d) => d.data() as VegCategoryDoc));
+      setCategories(snap.docs.map((d) => d.data() as CategoryDoc));
       setLoading(false);
     });
   }, []);

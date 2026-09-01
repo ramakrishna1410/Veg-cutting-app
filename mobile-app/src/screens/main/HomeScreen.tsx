@@ -4,7 +4,7 @@ import { ChevronRight, Leaf } from "lucide-react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { useCategories } from "@/context/CategoriesContext";
-import { VegCategoryDoc } from "@/lib/domain";
+import { CategoryDoc } from "@/lib/domain";
 import BookingWindowBanner from "@/components/BookingWindowBanner";
 import { RootStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
@@ -18,7 +18,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.eyebrow}>Keelkattalai · 5 km delivery zone</Text>
-      <Text style={styles.title}>Choose your veggie mix</Text>
+      <Text style={styles.title}>What are you cooking?</Text>
       <BookingWindowBanner />
       {loading && <Text style={styles.loading}>Loading categories...</Text>}
       <FlatList
@@ -27,7 +27,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <CategoryCard
             category={item}
-            onPress={() => navigation.navigate("CategoryDetail", { categoryId: item.id })}
+            onPress={() => navigation.navigate("MenuList", { categoryId: item.id })}
           />
         )}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
@@ -37,17 +37,13 @@ export default function HomeScreen() {
   );
 }
 
-function CategoryCard({ category, onPress }: { category: VegCategoryDoc; onPress: () => void }) {
+function CategoryCard({ category, onPress }: { category: CategoryDoc; onPress: () => void }) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.cardIcon}>
         <Leaf size={18} color={colors.accent} />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle}>{category.name}</Text>
-        <Text style={styles.cardDesc}>{category.description}</Text>
-        <Text style={styles.cardPrice}>₹{category.price} / pack</Text>
-      </View>
+      <Text style={styles.cardTitle}>{category.name}</Text>
       <ChevronRight size={18} color={colors.textMuted} />
     </Pressable>
   );
@@ -61,16 +57,14 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.panel,
     borderRadius: radii.xl,
-    padding: 16,
+    padding: 18,
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
+    alignItems: "center",
+    gap: 14,
   },
   cardIcon: {
-    width: 38, height: 38, borderRadius: radii.md, backgroundColor: colors.panel2,
+    width: 42, height: 42, borderRadius: radii.md, backgroundColor: colors.panel2,
     alignItems: "center", justifyContent: "center",
   },
-  cardTitle: { fontSize: 16.5, fontFamily: fonts.serifMedium, color: colors.text },
-  cardDesc: { fontSize: 13, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 4 },
-  cardPrice: { fontSize: 13, fontFamily: fonts.sansSemiBold, color: colors.accent, marginTop: 8 },
+  cardTitle: { fontSize: 17, fontFamily: fonts.serifMedium, color: colors.text, flex: 1 },
 });

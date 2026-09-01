@@ -24,8 +24,20 @@ export interface AddressDoc {
   createdAt: number;
 }
 
-export interface VegCategoryDoc {
+// Top-level grouping a customer browses first, e.g. "Poriyal", "Kootu",
+// "Rice Veggies", "Miscellaneous". Admin-managed.
+export interface CategoryDoc {
   id: string;
+  name: string;
+  sortOrder: number;
+  active: boolean;
+}
+
+// A single orderable veg pack within a category, e.g. "Biryani Veggies"
+// under "Rice Veggies". Was called VegCategoryDoc before categories existed.
+export interface MenuItemDoc {
+  id: string;
+  categoryId: string;
   name: string; // "Biryani Veggies"
   description: string;
   imageUrl: string;
@@ -47,8 +59,8 @@ export type PaymentMethod = "cod" | "online";
 export type PaymentStatus = "cod_pending" | "cod_collected" | "online_paid";
 
 export interface OrderItem {
-  categoryId: string;
-  categoryName: string; // snapshotted at order time, in case the category is later renamed
+  menuItemId: string;
+  menuItemName: string; // snapshotted at order time, in case the menu item is later renamed
   quantity: number;
   unitPrice: number; // snapshotted at order time, in case the price is later changed
 }

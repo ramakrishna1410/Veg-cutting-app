@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import LoginPage from "@/pages/LoginPage";
 import TodayOrdersPage from "@/pages/TodayOrdersPage";
 import CategoriesPage from "@/pages/CategoriesPage";
+import MenuItemsPage from "@/pages/MenuItemsPage";
 import DeliveryViewPage from "@/pages/DeliveryViewPage";
 
 export default function App() {
@@ -42,6 +43,7 @@ function Gate() {
       <Routes>
         {isAdmin && <Route path="/orders" element={<TodayOrdersPage />} />}
         {isAdmin && <Route path="/categories" element={<CategoriesPage />} />}
+        {isAdmin && <Route path="/menu-items" element={<MenuItemsPage />} />}
         <Route path="/delivery" element={<DeliveryViewPage />} />
         <Route path="*" element={<Navigate to={isAdmin ? "/orders" : "/delivery"} replace />} />
       </Routes>
