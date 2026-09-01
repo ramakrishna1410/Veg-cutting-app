@@ -3,20 +3,21 @@
 
 export type UserRole = "customer" | "admin" | "delivery";
 export type DeliverySlot = "morning" | "evening";
-export type SubscriptionPlan = "weekly" | "monthly";
-export type SubscriptionStatus = "active" | "paused" | "cancelled";
 export type OrderStatus =
   | "pending"
   | "confirmed"
   | "out_for_delivery"
   | "delivered"
   | "cancelled";
+export type PaymentMethod = "cod" | "online";
+export type PaymentStatus = "cod_pending" | "cod_collected" | "online_paid";
 
 export interface UserDoc {
   uid: string;
   role: UserRole;
   name: string;
   phone: string;
+  email?: string;
   createdAt: number;
 }
 
@@ -38,34 +39,30 @@ export interface VegCategoryDoc {
   description: string;
   imageUrl: string;
   items: string[];
-  priceWeekly: number;
-  priceMonthly: number;
+  price: number;
   active: boolean;
 }
 
-export interface SubscriptionDoc {
-  id: string;
-  uid: string;
+export interface OrderItem {
   categoryId: string;
-  plan: SubscriptionPlan;
-  slot: DeliverySlot;
-  addressId: string;
-  startDate: number;
-  status: SubscriptionStatus;
-  nextDeliveryDate: number;
-  createdAt: number;
+  categoryName: string;
+  quantity: number;
+  unitPrice: number;
 }
 
 export interface OrderDoc {
   id: string;
-  subId: string | null;
   uid: string;
-  categoryId: string;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
   slot: DeliverySlot;
   deliveryDate: number;
   addressId: string;
   status: OrderStatus;
   assignedDeliveryUid: string | null;
-  paymentStatus: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   createdAt: number;
 }

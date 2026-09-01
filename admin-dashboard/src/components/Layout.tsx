@@ -3,7 +3,6 @@ import { NavLink } from "react-router-dom";
 import {
   ClipboardList,
   Leaf,
-  Users,
   Truck,
   LogOut,
 } from "lucide-react";
@@ -12,7 +11,6 @@ import { useAuth } from "@/context/AuthContext";
 const ADMIN_NAV = [
   { to: "/orders", label: "Today's Orders", icon: ClipboardList },
   { to: "/categories", label: "Categories", icon: Leaf },
-  { to: "/subscriptions", label: "Subscriptions", icon: Users },
 ];
 
 export default function Layout({ children }: PropsWithChildren) {

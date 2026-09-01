@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, query, updateDoc, where } from "firebase/firestore";
-import { MapPin, Truck, CheckCircle2 } from "lucide-react";
+import { MapPin, Truck, CheckCircle2, Banknote } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { istMidnightMillis } from "@/lib/dateUtils";
-import { AddressDoc, OrderDoc, VegCategoryDoc } from "@/lib/domain";
+import { AddressDoc, OrderDoc } from "@/lib/domain";
 
 export default function DeliveryViewPage() {
   const { appUser } = useAuth();
   const [orders, setOrders] = useState<OrderDoc[]>([]);
-  const [categories, setCategories] = useState<Record<string, VegCategoryDoc>>({});
   const [addresses, setAddresses] = useState<Record<string, AddressDoc>>({});
 
   useEffect(() => {
@@ -26,14 +25,6 @@ export default function DeliveryViewPage() {
   }, [appUser]);
 
   useEffect(() => {
-    return onSnapshot(collection(db, "vegCategories"), (snap) => {
-      const map: Record<string, VegCategoryDoc> = {};
-      snap.docs.forEach((d) => (map[d.id] = d.data() as VegCategoryDoc));
-      setCategories(map);
-    });
-  }, []);
-
-  useEffect(() => {
     return onSnapshot(collection(db, "addresses"), (snap) => {
       const map: Record<string, AddressDoc> = {};
       snap.docs.forEach((d) => (map[d.id] = d.data() as AddressDoc));
@@ -42,7 +33,7 @@ export default function DeliveryViewPage() {
   }, []);
 
   async function markDelivered(orderId: string) {
-    await updateDoc(doc(db, "orders", orderId), { status: "delivered" });
+    await updateDoc(doc(db, "orders", orderId), { status: "delivered", paymentStatus: "cod_collected" });
   }
 
   async function markOutForDelivery(orderId: string) {
@@ -61,13 +52,17 @@ export default function DeliveryViewPage() {
           <div key={o.id} className="card-soft">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <strong style={{ fontFamily: "'Newsreader', serif", fontSize: 16 }}>
-                {categories[o.categoryId]?.name ?? o.categoryId}
+                {o.items.map((item) => `${item.categoryName} ×${item.quantity}`).join(", ")}
               </strong>
               <span className={`chip chip-${o.status}`}>{o.status.replace(/_/g, " ")}</span>
             </div>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginTop: 10, fontSize: 13, color: "var(--text)" }}>
               <MapPin size={14} style={{ marginTop: 2, flexShrink: 0, color: "var(--text-muted)" }} />
               {addresses[o.addressId]?.formattedAddress ?? "Address unavailable"}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 13, fontWeight: 600, color: "var(--accent)" }}>
+              <Banknote size={14} />
+              Collect ₹{o.total} (COD)
             </div>
             <div className="eyebrow" style={{ marginTop: 8 }}>
               {o.slot === "morning" ? "5–8 AM" : "5–8 PM"}

@@ -10,7 +10,7 @@ import CompleteProfileScreen from "@/screens/auth/CompleteProfileScreen";
 import AddressCaptureScreen from "@/screens/onboarding/AddressCaptureScreen";
 import MainTabs from "@/navigation/MainTabs";
 import CategoryDetailScreen from "@/screens/main/CategoryDetailScreen";
-import SlotPlanPickerScreen from "@/screens/main/SlotPlanPickerScreen";
+import SlotPickerScreen from "@/screens/main/SlotPickerScreen";
 import CheckoutScreen from "@/screens/main/CheckoutScreen";
 import { colors } from "@/lib/theme";
 import {
@@ -59,9 +59,9 @@ function MainNavigator() {
         options={{ title: "" }}
       />
       <RootStack.Screen
-        name="SlotPlanPicker"
-        component={SlotPlanPickerScreen}
-        options={{ title: "Slot & plan" }}
+        name="SlotPicker"
+        component={SlotPickerScreen}
+        options={{ title: "Delivery slot" }}
       />
       <RootStack.Screen name="Checkout" component={CheckoutScreen} options={{ title: "Checkout" }} />
     </RootStack.Navigator>

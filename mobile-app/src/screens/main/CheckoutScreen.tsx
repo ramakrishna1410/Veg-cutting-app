@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Banknote, CreditCard } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCategories } from "@/context/CategoriesContext";
+import { useCart } from "@/context/CartContext";
 import { useAddresses } from "@/context/AddressContext";
-import { createSubscription } from "@/lib/api";
+import { createOrder } from "@/lib/api";
+import { PaymentMethod } from "@/lib/domain";
 import { RootStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
 import { PrimaryButton, SoftCard } from "@/components/ui";
@@ -11,78 +13,146 @@ import { PrimaryButton, SoftCard } from "@/components/ui";
 type Props = NativeStackScreenProps<RootStackParamList, "Checkout">;
 
 export default function CheckoutScreen({ route, navigation }: Props) {
-  const { categoryId, plan, slot } = route.params;
-  const { getCategory } = useCategories();
+  const { slot } = route.params;
+  const { lines, subtotal, deliveryFee, total, clear } = useCart();
   const { primaryAddress } = useAddresses();
-  const category = getCategory(categoryId);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const price = category ? (plan === "weekly" ? category.priceWeekly : category.priceMonthly) : 0;
-
   async function handleConfirm() {
-    if (!primaryAddress) return;
+    if (!primaryAddress || lines.length === 0) return;
     setError(null);
     setPlacing(true);
     try {
-      await createSubscription({ categoryId, plan, slot, addressId: primaryAddress.id });
-      navigation.getParent()?.navigate("Subscriptions" as never);
+      await createOrder({
+        items: lines.map((l) => ({ categoryId: l.categoryId, quantity: l.quantity })),
+        slot,
+        addressId: primaryAddress.id,
+        paymentMethod: "cod",
+      });
+      clear();
+      navigation.getParent()?.navigate("Orders" as never);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not place subscription.");
+      setError(e instanceof Error ? e.message : "Could not place order.");
     } finally {
       setPlacing(false);
     }
   }
 
-  if (!category) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ fontFamily: fonts.sans }}>Category not found.</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Confirm your subscription</Text>
+      <Text style={styles.title}>Confirm your order</Text>
 
       <SoftCard>
-        <SummaryRow label="Category" value={category.name} />
-        <SummaryRow label="Plan" value={plan} />
+        {lines.map((line) => (
+          <View key={line.categoryId} style={styles.itemRow}>
+            <Text style={styles.itemName}>{line.name} ×{line.quantity}</Text>
+            <Text style={styles.itemPrice}>₹{line.unitPrice * line.quantity}</Text>
+          </View>
+        ))}
+        <View style={styles.divider} />
+        <SummaryRow label="Subtotal" value={`₹${subtotal}`} />
+        <SummaryRow label="Delivery" value={deliveryFee === 0 ? "Free" : `₹${deliveryFee}`} />
         <SummaryRow label="Slot" value={slot === "morning" ? "5–8 AM" : "5–8 PM"} />
         <SummaryRow label="Address" value={primaryAddress?.formattedAddress ?? "No address on file"} />
-        <SummaryRow label="Price" value={`₹${price}`} />
-        <SummaryRow label="Payment" value="Cash on delivery (for now)" last />
+        <View style={styles.divider} />
+        <SummaryRow label="Total" value={`₹${total}`} bold />
       </SoftCard>
 
+      <Text style={styles.sectionLabel}>Payment method</Text>
+      <View style={{ gap: 10 }}>
+        <PaymentOption
+          icon={<Banknote size={18} color={paymentMethod === "cod" ? colors.accent : colors.textMuted} />}
+          label="Cash on delivery"
+          sub="Pay the delivery partner when your order arrives"
+          selected={paymentMethod === "cod"}
+          disabled={false}
+          onPress={() => setPaymentMethod("cod")}
+        />
+        <PaymentOption
+          icon={<CreditCard size={18} color={colors.textMuted} />}
+          label="Pay online"
+          sub="Coming soon"
+          selected={false}
+          disabled
+          onPress={() => {}}
+        />
+      </View>
+
       {!primaryAddress && (
-        <Text style={styles.error}>
-          Add a delivery address within our service area before subscribing.
-        </Text>
+        <Text style={styles.error}>Add a delivery address within our service area before ordering.</Text>
       )}
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <PrimaryButton style={{ marginTop: 28 }} onPress={handleConfirm} disabled={!primaryAddress || placing}>
-        {placing ? "Placing..." : "Confirm subscription"}
+      <PrimaryButton
+        style={{ marginTop: 24 }}
+        onPress={handleConfirm}
+        disabled={!primaryAddress || lines.length === 0 || placing}
+      >
+        {placing ? "Placing order..." : `Place order — ₹${total}`}
       </PrimaryButton>
     </View>
   );
 }
 
-function SummaryRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+function SummaryRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
-    <View style={[styles.summaryRow, !last && { marginBottom: 12 }]}>
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={styles.summaryValue}>{value}</Text>
+    <View style={styles.summaryRow}>
+      <Text style={[styles.summaryLabel, bold && { fontFamily: fonts.sansBold, color: colors.text }]}>{label}</Text>
+      <Text style={[styles.summaryValue, bold && { fontFamily: fonts.sansBold, fontSize: 15 }]}>{value}</Text>
     </View>
+  );
+}
+
+function PaymentOption({
+  icon,
+  label,
+  sub,
+  selected,
+  disabled,
+  onPress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  sub: string;
+  selected: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.paymentOption, selected && styles.paymentOptionSelected, disabled && styles.paymentOptionDisabled]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      {icon}
+      <View style={{ marginLeft: 10, flex: 1 }}>
+        <Text style={[styles.paymentLabel, selected && { color: colors.accent }]}>{label}</Text>
+        <Text style={styles.paymentSub}>{sub}</Text>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, paddingTop: 56, backgroundColor: colors.bg },
   title: { fontSize: 20, fontFamily: fonts.serif, color: colors.text, marginBottom: 20 },
-  summaryRow: { flexDirection: "row", justifyContent: "space-between" },
+  itemRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  itemName: { fontSize: 13, fontFamily: fonts.sans, color: colors.text, flexShrink: 1 },
+  itemPrice: { fontSize: 13, fontFamily: fonts.mono, color: colors.text },
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 10 },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
   summaryLabel: { fontSize: 13, fontFamily: fonts.sans, color: colors.textMuted },
   summaryValue: { fontSize: 13, fontFamily: fonts.sansSemiBold, color: colors.text, flexShrink: 1, textAlign: "right", marginLeft: 12 },
+  sectionLabel: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, marginTop: 24, marginBottom: 10 },
+  paymentOption: {
+    flexDirection: "row", alignItems: "center", padding: 14,
+    borderWidth: 1.5, borderColor: colors.border, borderRadius: radii.lg, backgroundColor: "#fff",
+  },
+  paymentOptionSelected: { borderColor: colors.accent, backgroundColor: colors.panel2 },
+  paymentOptionDisabled: { opacity: 0.55 },
+  paymentLabel: { fontSize: 14, fontFamily: fonts.sansSemiBold, color: colors.text },
+  paymentSub: { fontSize: 11.5, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 2 },
   error: { color: colors.danger, marginTop: 16, fontFamily: fonts.sans, fontSize: 13 },
 });

@@ -10,17 +10,13 @@ export type OnboardingStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
-  Subscriptions: undefined;
+  Cart: undefined;
   Orders: undefined;
   Profile: undefined;
 };
 
 export type RootStackParamList = {
   CategoryDetail: { categoryId: string };
-  SlotPlanPicker: { categoryId: string };
-  Checkout: {
-    categoryId: string;
-    plan: "weekly" | "monthly";
-    slot: "morning" | "evening";
-  };
+  SlotPicker: undefined;
+  Checkout: { slot: "morning" | "evening" };
 };

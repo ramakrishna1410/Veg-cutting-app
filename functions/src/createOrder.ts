@@ -1,18 +1,25 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { loadBookingWindows } from "./config";
-import { DeliverySlot, getOpenBookingSlot, nextDeliveryDateForSlot } from "./domain";
+import { loadBookingWindows, loadDeliveryFee } from "./config";
+import { DeliverySlot, PaymentMethod, getOpenBookingSlot, nextDeliveryDateForSlot } from "./domain";
+
+interface CartItemInput {
+  categoryId: string;
+  quantity: number;
+}
 
 interface CreateOrderRequest {
-  categoryId: string;
+  items: CartItemInput[];
   slot: DeliverySlot;
   addressId: string;
+  paymentMethod: PaymentMethod;
 }
 
 /**
- * One-off (non-subscription) order, same booking-window + service-area
- * enforcement as createSubscription. Recurring orders from active
- * subscriptions are generated separately by generateDailyOrders.
+ * Places an ad-hoc order for one or more recipe packs. Prices, the delivery
+ * fee, the booking window and the service-area check are all computed and
+ * enforced server-side from live Firestore data — never trust a client-
+ * supplied price or fee, since request.data is attacker-controlled.
  */
 export const createOrder = onCall<CreateOrderRequest>(async (request) => {
   const uid = request.auth?.uid;
@@ -20,15 +27,30 @@ export const createOrder = onCall<CreateOrderRequest>(async (request) => {
     throw new HttpsError("unauthenticated", "Sign in required.");
   }
 
-  const { categoryId, slot, addressId } = request.data;
-  if (!categoryId || !slot || !addressId) {
+  const { items, slot, addressId, paymentMethod } = request.data;
+  if (!Array.isArray(items) || items.length === 0 || !slot || !addressId) {
     throw new HttpsError("invalid-argument", "Missing required fields.");
   }
   if (slot !== "morning" && slot !== "evening") {
     throw new HttpsError("invalid-argument", "Invalid slot.");
   }
+  if (paymentMethod !== "cod") {
+    // Online payment isn't wired up to a gateway yet — every order is COD
+    // for now. Reject anything else rather than silently downgrading it,
+    // so a future client bug can't accidentally charge nobody.
+    throw new HttpsError(
+      "failed-precondition",
+      "Online payment isn't available yet — please choose cash on delivery."
+    );
+  }
+  for (const item of items) {
+    if (!item.categoryId || !Number.isInteger(item.quantity) || item.quantity < 1) {
+      throw new HttpsError("invalid-argument", "Each item needs a categoryId and a positive quantity.");
+    }
+  }
 
   const db = admin.firestore();
+
   const windows = await loadBookingWindows();
   const openSlot = getOpenBookingSlot(windows);
   if (openSlot === null) {
@@ -44,14 +66,7 @@ export const createOrder = onCall<CreateOrderRequest>(async (request) => {
     );
   }
 
-  const [categorySnap, addressSnap] = await Promise.all([
-    db.doc(`vegCategories/${categoryId}`).get(),
-    db.doc(`addresses/${addressId}`).get(),
-  ]);
-
-  if (!categorySnap.exists || categorySnap.data()?.active !== true) {
-    throw new HttpsError("not-found", "Category not found or inactive.");
-  }
+  const addressSnap = await db.doc(`addresses/${addressId}`).get();
   const address = addressSnap.data();
   if (!addressSnap.exists || address?.uid !== uid) {
     throw new HttpsError("not-found", "Address not found.");
@@ -63,21 +78,47 @@ export const createOrder = onCall<CreateOrderRequest>(async (request) => {
     );
   }
 
+  const categorySnaps = await Promise.all(
+    items.map((item) => db.doc(`vegCategories/${item.categoryId}`).get())
+  );
+
+  const orderItems = items.map((item, i) => {
+    const snap = categorySnaps[i];
+    const category = snap.data();
+    if (!snap.exists || category?.active !== true) {
+      throw new HttpsError("not-found", `Category ${item.categoryId} not found or inactive.`);
+    }
+    return {
+      categoryId: item.categoryId,
+      categoryName: category!.name as string,
+      quantity: item.quantity,
+      unitPrice: category!.price as number,
+    };
+  });
+
+  const subtotal = orderItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const deliveryFeeConfig = await loadDeliveryFee();
+  const deliveryFee = subtotal >= deliveryFeeConfig.freeDeliveryThreshold ? 0 : deliveryFeeConfig.flatDeliveryFee;
+  const total = subtotal + deliveryFee;
+
   const deliveryDate = nextDeliveryDateForSlot(slot, windows);
   const orderRef = db.collection("orders").doc();
   await orderRef.set({
     id: orderRef.id,
-    subId: null,
     uid,
-    categoryId,
+    items: orderItems,
+    subtotal,
+    deliveryFee,
+    total,
     slot,
     deliveryDate,
     addressId,
     status: "pending",
     assignedDeliveryUid: null,
+    paymentMethod: "cod",
     paymentStatus: "cod_pending",
     createdAt: Date.now(),
   });
 
-  return { orderId: orderRef.id, deliveryDate };
+  return { orderId: orderRef.id, deliveryDate, subtotal, deliveryFee, total };
 });

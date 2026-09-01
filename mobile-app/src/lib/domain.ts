@@ -4,14 +4,14 @@
 // sync with /shared if you change the rules there.
 
 export type DeliverySlot = "morning" | "evening";
-export type SubscriptionPlan = "weekly" | "monthly";
-export type SubscriptionStatus = "active" | "paused" | "cancelled";
 export type OrderStatus =
   | "pending"
   | "confirmed"
   | "out_for_delivery"
   | "delivered"
   | "cancelled";
+export type PaymentMethod = "cod" | "online";
+export type PaymentStatus = "cod_pending" | "cod_collected" | "online_paid";
 
 export interface VegCategoryDoc {
   id: string;
@@ -19,8 +19,7 @@ export interface VegCategoryDoc {
   description: string;
   imageUrl: string;
   items: string[];
-  priceWeekly: number;
-  priceMonthly: number;
+  price: number;
   active: boolean;
 }
 
@@ -36,30 +35,27 @@ export interface AddressDoc {
   createdAt: number;
 }
 
-export interface SubscriptionDoc {
-  id: string;
-  uid: string;
+export interface OrderItem {
   categoryId: string;
-  plan: SubscriptionPlan;
-  slot: DeliverySlot;
-  addressId: string;
-  startDate: number;
-  status: SubscriptionStatus;
-  nextDeliveryDate: number;
-  createdAt: number;
+  categoryName: string;
+  quantity: number;
+  unitPrice: number;
 }
 
 export interface OrderDoc {
   id: string;
-  subId: string | null;
   uid: string;
-  categoryId: string;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
   slot: DeliverySlot;
   deliveryDate: number;
   addressId: string;
   status: OrderStatus;
   assignedDeliveryUid: string | null;
-  paymentStatus: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   createdAt: number;
 }
 
@@ -76,6 +72,12 @@ export const DEFAULT_BOOKING_WINDOWS: BookingWindowsConfig = {
   eveningStartHour: 17,
   eveningEndHour: 20,
 };
+
+// Mirrors DEFAULT_DELIVERY_FEE in /shared/constants.ts — used only for the
+// live cart preview; the real charge is always computed server-side in
+// createOrder from config/deliveryFee (falling back to these same numbers).
+export const FREE_DELIVERY_THRESHOLD = 129;
+export const FLAT_DELIVERY_FEE = 25;
 
 const IST_TIMEZONE = "Asia/Kolkata";
 
@@ -101,26 +103,4 @@ export function getOpenBookingSlot(
     return "evening";
   }
   return null;
-}
-
-/** Minutes until the given slot's booking window next opens (0 if it's open now). */
-export function minutesUntilSlotOpens(
-  slot: DeliverySlot,
-  windows: BookingWindowsConfig = DEFAULT_BOOKING_WINDOWS,
-  now: Date = new Date()
-): number {
-  if (getOpenBookingSlot(windows, now) === slot) return 0;
-  const startHour =
-    slot === "morning" ? windows.morningStartHour : windows.eveningStartHour;
-  const hour = getIstHour(now);
-  const minute = parseInt(
-    new Intl.DateTimeFormat("en-US", {
-      timeZone: IST_TIMEZONE,
-      minute: "numeric",
-    }).format(now),
-    10
-  );
-  let hoursUntil = startHour - hour;
-  if (hoursUntil < 0) hoursUntil += 24;
-  return hoursUntil * 60 - minute;
 }

@@ -51,24 +51,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Subscriptions: customer owns theirs (read/pause/cancel); admin has full control.
-    // Creation of NEW subscriptions is only done via the createSubscription Cloud
-    // Function (which enforces the booking window + service area), never a direct
-    // client write, so client-side create is disallowed here.
-    match /subscriptions/{subId} {
-      allow read: if isSignedIn() && (resource.data.uid == myUid() || isAdmin());
-      allow create: if false;
-      allow update: if isAdmin()
-                    || (isSignedIn() && resource.data.uid == myUid()
-                        // customers may only toggle status between active/paused/cancelled
-                        && request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['status']));
-      allow delete: if isAdmin();
-    }
-
-    // Orders: same pattern. Creation goes through createOrder / generateDailyOrders
-    // Cloud Functions only. Delivery partners may update status on orders assigned
-    // to them; admin has full control.
+    // Orders: creation goes through the createOrder Cloud Function only (it
+    // computes prices/delivery fee server-side and enforces the booking
+    // window + service area) — never a direct client write. Delivery
+    // partners may update status on orders assigned to them; admin has full
+    // control; a customer may cancel their own still-pending order.
     match /orders/{orderId} {
       allow read: if isSignedIn() && (
         resource.data.uid == myUid() ||

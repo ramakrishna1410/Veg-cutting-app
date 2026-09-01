@@ -8,6 +8,7 @@ export interface UserDoc {
   role: UserRole;
   name: string;
   phone: string;
+  email?: string;
   createdAt: number; // epoch millis
 }
 
@@ -29,27 +30,11 @@ export interface VegCategoryDoc {
   description: string;
   imageUrl: string;
   items: string[]; // e.g. ["Onion", "Carrot", "Beans", "Potato"]
-  priceWeekly: number; // INR
-  priceMonthly: number; // INR
+  price: number; // INR, per pack, ad-hoc
   active: boolean;
 }
 
 export type DeliverySlot = "morning" | "evening";
-export type SubscriptionPlan = "weekly" | "monthly";
-export type SubscriptionStatus = "active" | "paused" | "cancelled";
-
-export interface SubscriptionDoc {
-  id: string;
-  uid: string;
-  categoryId: string;
-  plan: SubscriptionPlan;
-  slot: DeliverySlot;
-  addressId: string;
-  startDate: number; // epoch millis, first delivery date
-  status: SubscriptionStatus;
-  nextDeliveryDate: number; // epoch millis
-  createdAt: number;
-}
 
 export type OrderStatus =
   | "pending"
@@ -58,17 +43,30 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
+export type PaymentMethod = "cod" | "online";
+export type PaymentStatus = "cod_pending" | "cod_collected" | "online_paid";
+
+export interface OrderItem {
+  categoryId: string;
+  categoryName: string; // snapshotted at order time, in case the category is later renamed
+  quantity: number;
+  unitPrice: number; // snapshotted at order time, in case the price is later changed
+}
+
 export interface OrderDoc {
   id: string;
-  subId: string | null; // null for a one-off order
   uid: string;
-  categoryId: string;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
   slot: DeliverySlot;
   deliveryDate: number; // epoch millis, date-only (midnight IST)
   addressId: string;
   status: OrderStatus;
   assignedDeliveryUid: string | null;
-  paymentStatus: "cod_pending" | "cod_collected" | "manual"; // reserved for future gateway integration
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   createdAt: number;
 }
 
@@ -83,4 +81,9 @@ export interface ServiceAreaConfig {
   hubLat: number;
   hubLng: number;
   radiusKm: number;
+}
+
+export interface DeliveryFeeConfig {
+  freeDeliveryThreshold: number; // orders at or above this subtotal ship free
+  flatDeliveryFee: number; // charged when subtotal is below the threshold
 }

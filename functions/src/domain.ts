@@ -4,7 +4,7 @@
 // change the rules in /shared, change them here too.
 
 export type DeliverySlot = "morning" | "evening";
-export type SubscriptionPlan = "weekly" | "monthly";
+export type PaymentMethod = "cod" | "online";
 
 export interface BookingWindowsConfig {
   morningStartHour: number;
@@ -19,6 +19,11 @@ export interface ServiceAreaConfig {
   radiusKm: number;
 }
 
+export interface DeliveryFeeConfig {
+  freeDeliveryThreshold: number;
+  flatDeliveryFee: number;
+}
+
 export const DEFAULT_SERVICE_AREA: ServiceAreaConfig = {
   hubLat: 12.9486,
   hubLng: 80.1959,
@@ -30,6 +35,11 @@ export const DEFAULT_BOOKING_WINDOWS: BookingWindowsConfig = {
   morningEndHour: 8,
   eveningStartHour: 17,
   eveningEndHour: 20,
+};
+
+export const DEFAULT_DELIVERY_FEE: DeliveryFeeConfig = {
+  freeDeliveryThreshold: 129,
+  flatDeliveryFee: 25,
 };
 
 const IST_TIMEZONE = "Asia/Kolkata";

@@ -1,4 +1,4 @@
-import type { BookingWindowsConfig, ServiceAreaConfig } from "./types";
+import type { BookingWindowsConfig, DeliveryFeeConfig, ServiceAreaConfig } from "./types";
 
 // Keelkattalai, Chennai — approximate hub coordinate. Update to the exact
 // kitchen/hub address once finalized; this is the center used for the 5 km
@@ -20,40 +20,42 @@ export const DEFAULT_BOOKING_WINDOWS: BookingWindowsConfig = {
 
 export const IST_TIMEZONE = "Asia/Kolkata";
 
+// Orders below this subtotal pay DEFAULT_DELIVERY_FEE.flatDeliveryFee for delivery;
+// at or above it, delivery is free.
+export const DEFAULT_DELIVERY_FEE: DeliveryFeeConfig = {
+  freeDeliveryThreshold: 129,
+  flatDeliveryFee: 25,
+};
+
 export const VEG_CATEGORY_SEED = [
   {
     name: "Biryani Veggies",
     description: "Onion, carrot, beans, potato — cut and ready for biryani.",
     items: ["Onion", "Carrot", "Beans", "Potato"],
-    priceWeekly: 249,
-    priceMonthly: 899,
+    price: 89,
   },
   {
     name: "Fried Rice Veggies",
     description: "Finely diced mixed veg for fried rice / noodles.",
     items: ["Carrot", "Beans", "Capsicum", "Cabbage", "Spring Onion"],
-    priceWeekly: 229,
-    priceMonthly: 829,
+    price: 79,
   },
   {
     name: "Sambar Veggies",
     description: "Classic sambar mix, chopped.",
     items: ["Drumstick", "Brinjal", "Pumpkin", "Carrot", "Onion", "Tomato"],
-    priceWeekly: 219,
-    priceMonthly: 799,
+    price: 75,
   },
   {
     name: "Tiffin Sambar Veggies",
     description: "Lighter mix for idli/dosa-side tiffin sambar.",
     items: ["Onion", "Tomato", "Carrot", "Drumstick"],
-    priceWeekly: 199,
-    priceMonthly: 749,
+    price: 65,
   },
   {
     name: "Veg Fry Mix",
     description: "Sliced veg for a quick stir-fry / poriyal.",
     items: ["Beans", "Carrot", "Cabbage", "Potato"],
-    priceWeekly: 209,
-    priceMonthly: 769,
+    price: 69,
   },
 ] as const;

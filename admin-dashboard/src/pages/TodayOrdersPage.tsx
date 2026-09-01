@@ -10,11 +10,10 @@ import {
 import { Sunrise, Sunset } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { istMidnightMillis } from "@/lib/dateUtils";
-import { OrderDoc, UserDoc, VegCategoryDoc } from "@/lib/domain";
+import { OrderDoc, UserDoc } from "@/lib/domain";
 
 export default function TodayOrdersPage() {
   const [orders, setOrders] = useState<OrderDoc[]>([]);
-  const [categories, setCategories] = useState<Record<string, VegCategoryDoc>>({});
   const [deliveryPartners, setDeliveryPartners] = useState<UserDoc[]>([]);
 
   useEffect(() => {
@@ -22,14 +21,6 @@ export default function TodayOrdersPage() {
     const q = query(collection(db, "orders"), where("deliveryDate", "==", todayMidnight));
     return onSnapshot(q, (snap) => {
       setOrders(snap.docs.map((d) => d.data() as OrderDoc));
-    });
-  }, []);
-
-  useEffect(() => {
-    return onSnapshot(collection(db, "vegCategories"), (snap) => {
-      const map: Record<string, VegCategoryDoc> = {};
-      snap.docs.forEach((d) => (map[d.id] = d.data() as VegCategoryDoc));
-      setCategories(map);
     });
   }, []);
 
@@ -80,7 +71,6 @@ export default function TodayOrdersPage() {
         subtitle="5:00 – 8:00 AM"
         icon={<Sunrise size={16} />}
         orders={morning}
-        categories={categories}
         deliveryPartners={deliveryPartners}
         onAssign={assign}
       />
@@ -89,7 +79,6 @@ export default function TodayOrdersPage() {
         subtitle="5:00 – 8:00 PM"
         icon={<Sunset size={16} />}
         orders={evening}
-        categories={categories}
         deliveryPartners={deliveryPartners}
         onAssign={assign}
       />
@@ -102,7 +91,6 @@ function SlotBoard({
   subtitle,
   icon,
   orders,
-  categories,
   deliveryPartners,
   onAssign,
 }: {
@@ -110,7 +98,6 @@ function SlotBoard({
   subtitle: string;
   icon: React.ReactNode;
   orders: OrderDoc[];
-  categories: Record<string, VegCategoryDoc>;
   deliveryPartners: UserDoc[];
   onAssign: (orderId: string, deliveryUid: string) => void;
 }) {
@@ -134,7 +121,8 @@ function SlotBoard({
         <table className="data-table">
           <thead>
             <tr>
-              <th>Category</th>
+              <th>Items</th>
+              <th>Total</th>
               <th>Status</th>
               <th>Assign to</th>
             </tr>
@@ -142,7 +130,15 @@ function SlotBoard({
           <tbody>
             {orders.map((o) => (
               <tr key={o.id}>
-                <td style={{ fontWeight: 600 }}>{categories[o.categoryId]?.name ?? o.categoryId}</td>
+                <td style={{ fontWeight: 600 }}>
+                  {o.items.map((item) => `${item.categoryName} ×${item.quantity}`).join(", ")}
+                </td>
+                <td>
+                  ₹{o.total}
+                  {o.deliveryFee > 0 && (
+                    <span style={{ color: "var(--text-muted)", fontSize: 12 }}> (incl. ₹{o.deliveryFee} delivery)</span>
+                  )}
+                </td>
                 <td>
                   <span className={`chip chip-${o.status}`}>{o.status.replace(/_/g, " ")}</span>
                 </td>
@@ -160,7 +156,7 @@ function SlotBoard({
             ))}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={3}>
+                <td colSpan={4}>
                   <div className="empty-state">No orders in this slot yet.</div>
                 </td>
               </tr>

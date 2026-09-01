@@ -46,9 +46,7 @@ function CategoryCard({ category, onPress }: { category: VegCategoryDoc; onPress
       <View style={{ flex: 1 }}>
         <Text style={styles.cardTitle}>{category.name}</Text>
         <Text style={styles.cardDesc}>{category.description}</Text>
-        <Text style={styles.cardPrice}>
-          From ₹{category.priceWeekly}/week · ₹{category.priceMonthly}/month
-        </Text>
+        <Text style={styles.cardPrice}>₹{category.price} / pack</Text>
       </View>
       <ChevronRight size={18} color={colors.textMuted} />
     </Pressable>

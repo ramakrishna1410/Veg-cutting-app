@@ -1,7 +1,9 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Minus, Plus } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCategories } from "@/context/CategoriesContext";
+import { useCart } from "@/context/CartContext";
 import { RootStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
 import { PrimaryButton, Card } from "@/components/ui";
@@ -10,7 +12,10 @@ type Props = NativeStackScreenProps<RootStackParamList, "CategoryDetail">;
 
 export default function CategoryDetailScreen({ route, navigation }: Props) {
   const { getCategory } = useCategories();
+  const { lines, setQuantity } = useCart();
   const category = getCategory(route.params.categoryId);
+  const existingLine = lines.find((l) => l.categoryId === route.params.categoryId);
+  const [qty, setQty] = useState(existingLine?.quantity ?? 1);
 
   if (!category) {
     return (
@@ -18,6 +23,11 @@ export default function CategoryDetailScreen({ route, navigation }: Props) {
         <Text style={{ fontFamily: fonts.sans, color: colors.text }}>Category not found.</Text>
       </View>
     );
+  }
+
+  function handleAddToCart() {
+    setQuantity(category!.id, category!.name, category!.price, qty);
+    navigation.goBack();
   }
 
   return (
@@ -36,21 +46,25 @@ export default function CategoryDetailScreen({ route, navigation }: Props) {
 
       <View style={styles.pricingBox}>
         <View>
-          <Text style={styles.pricingLabel}>Weekly</Text>
-          <Text style={styles.pricingValue}>₹{category.priceWeekly}</Text>
+          <Text style={styles.pricingLabel}>Price per pack</Text>
+          <Text style={styles.pricingValue}>₹{category.price}</Text>
         </View>
-        <View style={styles.pricingDivider} />
-        <View>
-          <Text style={styles.pricingLabel}>Monthly</Text>
-          <Text style={styles.pricingValue}>₹{category.priceMonthly}</Text>
+        <View style={styles.stepper}>
+          <Pressable
+            style={styles.stepperBtn}
+            onPress={() => setQty((q) => Math.max(1, q - 1))}
+          >
+            <Minus size={16} color={colors.text} />
+          </Pressable>
+          <Text style={styles.stepperQty}>{qty}</Text>
+          <Pressable style={styles.stepperBtn} onPress={() => setQty((q) => q + 1)}>
+            <Plus size={16} color={colors.text} />
+          </Pressable>
         </View>
       </View>
 
-      <PrimaryButton
-        style={{ marginTop: 28 }}
-        onPress={() => navigation.navigate("SlotPlanPicker", { categoryId: category.id })}
-      >
-        Choose slot &amp; plan
+      <PrimaryButton style={{ marginTop: 28 }} onPress={handleAddToCart}>
+        Add {qty} to cart — ₹{category.price * qty}
       </PrimaryButton>
     </View>
   );
@@ -68,8 +82,14 @@ const styles = StyleSheet.create({
     padding: 18,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
   },
   pricingLabel: { fontSize: 11.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, textTransform: "uppercase" },
-  pricingValue: { fontSize: 20, fontFamily: fonts.serif, color: colors.accent, marginTop: 2 },
-  pricingDivider: { width: 1, height: 32, backgroundColor: colors.border, marginHorizontal: 24 },
+  pricingValue: { fontSize: 22, fontFamily: fonts.serif, color: colors.accent, marginTop: 2 },
+  stepper: { flexDirection: "row", alignItems: "center", gap: 14 },
+  stepperBtn: {
+    width: 34, height: 34, borderRadius: radii.md, backgroundColor: "#fff",
+    borderWidth: 1.5, borderColor: colors.border, alignItems: "center", justifyContent: "center",
+  },
+  stepperQty: { fontSize: 17, fontFamily: fonts.mono, color: colors.text, minWidth: 20, textAlign: "center" },
 });
