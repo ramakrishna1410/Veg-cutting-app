@@ -79,6 +79,12 @@ export const DEFAULT_BOOKING_WINDOWS: BookingWindowsConfig = {
 export const FREE_DELIVERY_THRESHOLD = 129;
 export const FLAT_DELIVERY_FEE = 25;
 
+// TESTING TOGGLE — set back to true before real launch. While false, either
+// slot can be picked and checked out at any hour; getOpenBookingSlot still
+// reports the real open/closed status for display. Flip this in lockstep
+// with the same constant in functions/src/domain.ts.
+export const BOOKING_WINDOW_ENFORCED = false;
+
 const IST_TIMEZONE = "Asia/Kolkata";
 
 export function getIstHour(now: Date = new Date()): number {
@@ -103,4 +109,14 @@ export function getOpenBookingSlot(
     return "evening";
   }
   return null;
+}
+
+/** Whether a customer may book the given slot right now — the actual gate used in the UI. */
+export function isSlotBookable(
+  slot: DeliverySlot,
+  windows: BookingWindowsConfig = DEFAULT_BOOKING_WINDOWS,
+  now: Date = new Date()
+): boolean {
+  if (!BOOKING_WINDOW_ENFORCED) return true;
+  return getOpenBookingSlot(windows, now) === slot;
 }

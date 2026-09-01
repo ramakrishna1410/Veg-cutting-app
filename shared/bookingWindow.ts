@@ -1,5 +1,5 @@
 import type { BookingWindowsConfig, DeliverySlot } from "./types";
-import { IST_TIMEZONE } from "./constants";
+import { BOOKING_WINDOW_ENFORCED, IST_TIMEZONE } from "./constants";
 
 /** Current hour (0-23) in IST, using Intl so this works in Node and RN without extra deps. */
 export function getIstHour(now: Date = new Date()): number {
@@ -33,10 +33,12 @@ export function getOpenBookingSlot(
   return null;
 }
 
-export function isBookingWindowOpenForSlot(
+/** Whether a customer may book the given slot right now — the actual gate to use for enforcement. */
+export function isSlotBookable(
   slot: DeliverySlot,
   windows: BookingWindowsConfig,
   now: Date = new Date()
 ): boolean {
+  if (!BOOKING_WINDOW_ENFORCED) return true;
   return getOpenBookingSlot(windows, now) === slot;
 }

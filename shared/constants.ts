@@ -20,6 +20,13 @@ export const DEFAULT_BOOKING_WINDOWS: BookingWindowsConfig = {
 
 export const IST_TIMEZONE = "Asia/Kolkata";
 
+// TESTING TOGGLE — set back to true before real launch. While false, a
+// customer can book either delivery slot at any hour. Kept in lockstep with
+// the same constant duplicated in functions/src/domain.ts and
+// mobile-app/src/lib/domain.ts (see those files for why they're duplicated
+// rather than importing this one directly).
+export const BOOKING_WINDOW_ENFORCED = false;
+
 // Orders below this subtotal pay DEFAULT_DELIVERY_FEE.flatDeliveryFee for delivery;
 // at or above it, delivery is free.
 export const DEFAULT_DELIVERY_FEE: DeliveryFeeConfig = {

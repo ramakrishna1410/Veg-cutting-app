@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useBookingWindow } from "@/lib/useBookingWindow";
-import { DeliverySlot } from "@/lib/domain";
+import { BOOKING_WINDOW_ENFORCED, DeliverySlot, isSlotBookable } from "@/lib/domain";
 import { useCart } from "@/context/CartContext";
 import { RootStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
@@ -15,7 +15,7 @@ export default function SlotPickerScreen({ navigation }: Props) {
   const { total } = useCart();
   const [slot, setSlot] = useState<DeliverySlot>(openSlot ?? "morning");
 
-  const slotIsBookable = slot === openSlot;
+  const slotIsBookable = isSlotBookable(slot);
 
   return (
     <View style={styles.container}>
@@ -27,22 +27,25 @@ export default function SlotPickerScreen({ navigation }: Props) {
           label="Morning"
           sub="5–8 AM"
           selected={slot === "morning"}
-          bookable={openSlot === "morning"}
+          bookable={isSlotBookable("morning")}
           onPress={() => setSlot("morning")}
         />
         <SlotOption
           label="Evening"
           sub="5–8 PM"
           selected={slot === "evening"}
-          bookable={openSlot === "evening"}
+          bookable={isSlotBookable("evening")}
           onPress={() => setSlot("evening")}
         />
       </View>
-      {!openSlot && (
+      {BOOKING_WINDOW_ENFORCED && !openSlot && (
         <Text style={styles.notice}>
           Booking is closed right now. It opens 5–8 AM and 5–8 PM daily — come back during
           one of those windows to place this order.
         </Text>
+      )}
+      {!BOOKING_WINDOW_ENFORCED && (
+        <Text style={styles.testNotice}>Booking-window check is disabled for testing.</Text>
       )}
 
       <PrimaryButton
@@ -99,4 +102,5 @@ const styles = StyleSheet.create({
   optionSubtext: { fontSize: 11.5, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 4 },
   optionBadge: { fontSize: 10.5, fontFamily: fonts.sansSemiBold, marginTop: 6 },
   notice: { fontSize: 12, fontFamily: fonts.sans, color: "#92650E", marginTop: 14 },
+  testNotice: { fontSize: 11.5, fontFamily: fonts.sansSemiBold, color: colors.warm, marginTop: 14 },
 });

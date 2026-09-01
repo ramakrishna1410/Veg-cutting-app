@@ -7,7 +7,7 @@ import { useCart, CartLine } from "@/context/CartContext";
 import { useBookingWindow } from "@/lib/useBookingWindow";
 import { RootStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
-import { FREE_DELIVERY_THRESHOLD } from "@/lib/domain";
+import { BOOKING_WINDOW_ENFORCED, FREE_DELIVERY_THRESHOLD } from "@/lib/domain";
 import { PrimaryButton } from "@/components/ui";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -15,6 +15,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export default function CartScreen() {
   const { lines, setQuantity, removeLine, subtotal, deliveryFee, total } = useCart();
   const openSlot = useBookingWindow();
+  const canBookNow = BOOKING_WINDOW_ENFORCED ? openSlot !== null : true;
   const navigation = useNavigation<Nav>();
 
   return (
@@ -57,10 +58,10 @@ export default function CartScreen() {
 
           <PrimaryButton
             style={{ marginTop: 16 }}
-            disabled={!openSlot}
+            disabled={!canBookNow}
             onPress={() => navigation.navigate("SlotPicker")}
           >
-            {openSlot ? "Choose delivery slot" : "Booking closed right now"}
+            {canBookNow ? "Choose delivery slot" : "Booking closed right now"}
           </PrimaryButton>
         </View>
       )}

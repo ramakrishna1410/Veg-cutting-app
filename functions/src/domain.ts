@@ -42,6 +42,13 @@ export const DEFAULT_DELIVERY_FEE: DeliveryFeeConfig = {
   flatDeliveryFee: 25,
 };
 
+// TESTING TOGGLE — set back to true before real launch. While false, orders
+// can be placed for either slot at any hour; getOpenBookingSlot below still
+// reports the real open/closed status (used for display), but nothing gates
+// on it. Flip this in lockstep with the same constant in
+// mobile-app/src/lib/domain.ts.
+export const BOOKING_WINDOW_ENFORCED = false;
+
 const IST_TIMEZONE = "Asia/Kolkata";
 
 export function getIstHour(now: Date = new Date()): number {
@@ -66,6 +73,16 @@ export function getOpenBookingSlot(
     return "evening";
   }
   return null;
+}
+
+/** Whether a customer may book the given slot right now — the actual gate used at creation time. */
+export function isSlotBookable(
+  slot: DeliverySlot,
+  windows: BookingWindowsConfig,
+  now: Date = new Date()
+): boolean {
+  if (!BOOKING_WINDOW_ENFORCED) return true;
+  return getOpenBookingSlot(windows, now) === slot;
 }
 
 export function haversineKm(

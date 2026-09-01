@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { loadBookingWindows, loadDeliveryFee } from "./config";
-import { DeliverySlot, PaymentMethod, getOpenBookingSlot, nextDeliveryDateForSlot } from "./domain";
+import { DeliverySlot, PaymentMethod, isSlotBookable, nextDeliveryDateForSlot } from "./domain";
 
 interface CartItemInput {
   categoryId: string;
@@ -52,17 +52,10 @@ export const createOrder = onCall<CreateOrderRequest>(async (request) => {
   const db = admin.firestore();
 
   const windows = await loadBookingWindows();
-  const openSlot = getOpenBookingSlot(windows);
-  if (openSlot === null) {
+  if (!isSlotBookable(slot, windows)) {
     throw new HttpsError(
       "failed-precondition",
       "Booking is only open 5:00–8:00 AM and 5:00–8:00 PM IST. Please try again during those windows."
-    );
-  }
-  if (openSlot !== slot) {
-    throw new HttpsError(
-      "failed-precondition",
-      `Right now only the ${openSlot} slot can be booked.`
     );
   }
 
