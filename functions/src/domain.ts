@@ -120,8 +120,14 @@ export function nextDeliveryDateForSlot(
   windows: BookingWindowsConfig,
   now: Date = new Date()
 ): number {
-  const openSlot = getOpenBookingSlot(windows, now);
   const todayMidnightIst = istMidnight(now);
+  // While booking-window enforcement is off for testing, every order is
+  // treated as booked during its slot's window so it lands under today's
+  // date in the admin dashboard, regardless of the real clock time.
+  if (!BOOKING_WINDOW_ENFORCED) {
+    return todayMidnightIst;
+  }
+  const openSlot = getOpenBookingSlot(windows, now);
   // If we're booking the morning slot while the morning window is open,
   // or booking evening while the evening window is open, delivery starts today.
   // Otherwise (e.g. admin/back-office creating ahead of time) it starts tomorrow.
