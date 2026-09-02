@@ -1,83 +1,24 @@
-import React, { useRef, useState } from "react";
-import { Platform, View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import { Leaf } from "lucide-react-native";
-import {
-  signInWithPhoneNumber,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { auth, app } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { AuthStackParamList } from "@/navigation/types";
 import { colors, fonts, radii } from "@/lib/theme";
 import { PrimaryButton } from "@/components/ui";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "PhoneLogin">;
 
-export default function PhoneLoginScreen(props: Props) {
-  if (Platform.OS === "web") {
-    return <EmailLoginForm {...props} />;
-  }
-  return <PhoneLoginForm {...props} />;
-}
-
-// Native (iOS/Android): phone number + OTP via expo-firebase-recaptcha,
-// which only has a working implementation on native.
-function PhoneLoginForm({ navigation }: Props) {
-  const recaptchaVerifier = useRef<FirebaseRecaptchaVerifierModal>(null);
-  const [phone, setPhone] = useState("+91");
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSendOtp() {
-    setError(null);
-    if (!/^\+91\d{10}$/.test(phone)) {
-      setError("Enter a valid 10-digit Indian phone number.");
-      return;
-    }
-    if (!recaptchaVerifier.current) return;
-    setSending(true);
-    try {
-      const confirmation = await signInWithPhoneNumber(auth, phone, recaptchaVerifier.current);
-      navigation.navigate("OtpVerify", { verificationId: confirmation.verificationId, phone });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send OTP.");
-    } finally {
-      setSending(false);
-    }
-  }
-
-  return (
-    <View style={styles.container}>
-      <FirebaseRecaptchaVerifierModal ref={recaptchaVerifier} firebaseConfig={app.options} />
-      <View style={styles.crest}>
-        <Leaf size={26} color="#fff" />
-      </View>
-      <Text style={styles.title}>Veg Cutting App</Text>
-      <Text style={styles.subtitle}>Fresh cut veggies, delivered daily.</Text>
-
-      <Text style={styles.label}>Mobile number</Text>
-      <TextInput
-        style={styles.input}
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-        placeholder="+91XXXXXXXXXX"
-        placeholderTextColor={colors.textMuted}
-      />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <PrimaryButton onPress={handleSendOtp} disabled={sending}>
-        {sending ? "Sending..." : "Send OTP"}
-      </PrimaryButton>
-    </View>
-  );
-}
-
-// Web: email + password. Phone-OTP's recaptcha dependency doesn't work
-// reliably in a browser, so the web build uses Firebase's standard
-// email/password auth instead — same provider the admin dashboard uses.
-function EmailLoginForm({ navigation }: Props) {
+// Email + password on every platform. Phone-OTP was dropped: its only
+// working implementation (expo-firebase-recaptcha) depends on the
+// long-abandoned expo-firebase-core package, whose Android build script
+// uses a Gradle API removed in the toolchain SDK 57 now uses — it can't
+// produce a real native build at all (it only ever worked in Expo Go,
+// which is more permissive). Revisit with @react-native-firebase/auth
+// (native phone verification, no reCAPTCHA/WebView) if phone-first login
+// becomes a priority later.
+export default function PhoneLoginScreen({ navigation }: Props) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

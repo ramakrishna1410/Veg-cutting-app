@@ -1,6 +1,5 @@
 export type AuthStackParamList = {
   PhoneLogin: undefined;
-  OtpVerify: { verificationId: string; phone: string };
   CompleteProfile: undefined;
 };
 

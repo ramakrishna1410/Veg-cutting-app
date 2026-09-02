@@ -5,7 +5,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "@/context/AuthContext";
 import { useAddresses } from "@/context/AddressContext";
 import PhoneLoginScreen from "@/screens/auth/PhoneLoginScreen";
-import OtpVerifyScreen from "@/screens/auth/OtpVerifyScreen";
 import CompleteProfileScreen from "@/screens/auth/CompleteProfileScreen";
 import AddressCaptureScreen from "@/screens/onboarding/AddressCaptureScreen";
 import MainTabs from "@/navigation/MainTabs";
@@ -36,7 +35,6 @@ function AuthNavigator() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="PhoneLogin" component={PhoneLoginScreen} />
-      <AuthStack.Screen name="OtpVerify" component={OtpVerifyScreen} />
       <AuthStack.Screen name="CompleteProfile" component={CompleteProfileScreen} />
     </AuthStack.Navigator>
   );
