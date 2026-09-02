@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
 import { LogOut } from "lucide-react-native";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -18,14 +18,23 @@ export default function DeliveryOrdersScreen({ navigation }: Props) {
 
   useEffect(() => {
     if (!appUser) return;
-    const q = query(
-      collection(db, "orders"),
-      where("assignedDeliveryUid", "==", appUser.uid),
-      orderBy("deliveryDate", "desc")
+    // No orderBy here — combining it with the equality filter needs a
+    // composite index in a specific sort direction, and a silent failure
+    // there (permission/index error) leaves onSnapshot never firing with no
+    // visible error. Sorting the small per-partner list client-side avoids
+    // that footgun entirely.
+    const q = query(collection(db, "orders"), where("assignedDeliveryUid", "==", appUser.uid));
+    return onSnapshot(
+      q,
+      (snap) => {
+        const docs = snap.docs.map((d) => d.data() as OrderDoc);
+        docs.sort((a, b) => b.deliveryDate - a.deliveryDate);
+        setOrders(docs);
+      },
+      (error) => {
+        console.error("Failed to load assigned deliveries:", error);
+      }
     );
-    return onSnapshot(q, (snap) => {
-      setOrders(snap.docs.map((d) => d.data() as OrderDoc));
-    });
   }, [appUser]);
 
   const active = orders.filter((o) => o.status === "confirmed" || o.status === "out_for_delivery");
