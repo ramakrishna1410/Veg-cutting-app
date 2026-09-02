@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#2F6B3C"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vegcuttingapp.customer",
@@ -21,7 +23,16 @@
     },
     "android": {
       "package": "com.vegcuttingapp.customer",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2F6B3C"
@@ -38,6 +49,17 @@
           "locationWhenInUsePermission": "We use your location to check if you're within our 5 km Keelkattalai delivery area."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e67267e3-ce24-43ab-9f20-5ccce286b7d4"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e67267e3-ce24-43ab-9f20-5ccce286b7d4"
+    }
   }
 }
