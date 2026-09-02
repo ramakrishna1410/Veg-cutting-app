@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
+import { MapPin } from "lucide-react-native";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { OrderDoc } from "@/lib/domain";
 import { colors, fonts } from "@/lib/theme";
-import { Card, Chip } from "@/components/ui";
+import { Card, Chip, SecondaryButton } from "@/components/ui";
+import { RootStackParamList } from "@/navigation/types";
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function OrdersScreen() {
   const { appUser } = useAuth();
   const [orders, setOrders] = useState<OrderDoc[]>([]);
+  const navigation = useNavigation<Nav>();
 
   useEffect(() => {
     if (!appUser) return;
@@ -45,6 +52,15 @@ export default function OrdersScreen() {
             <Text style={styles.cardTotal}>
               ₹{item.total}{item.deliveryFee > 0 ? ` (incl. ₹${item.deliveryFee} delivery)` : ""} · Cash on delivery
             </Text>
+            {item.status === "out_for_delivery" && (
+              <SecondaryButton
+                onPress={() => navigation.navigate("OrderTracking", { orderId: item.id })}
+                icon={<MapPin size={13} color={colors.accent} />}
+                style={{ marginTop: 12, alignSelf: "flex-start" }}
+              >
+                Track order
+              </SecondaryButton>
+            )}
           </Card>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}

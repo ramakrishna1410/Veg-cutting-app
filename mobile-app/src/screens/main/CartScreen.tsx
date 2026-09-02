@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
-import { Minus, Plus, Trash2 } from "lucide-react-native";
+import { Leaf, Minus, Plus, Trash2 } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCart, CartLine } from "@/context/CartContext";
 import { useBookingWindow } from "@/lib/useBookingWindow";
 import { RootStackParamList } from "@/navigation/types";
-import { colors, fonts, radii } from "@/lib/theme";
+import { colors, fonts, radii, shadow } from "@/lib/theme";
 import { BOOKING_WINDOW_ENFORCED, FREE_DELIVERY_THRESHOLD } from "@/lib/domain";
 import { PrimaryButton } from "@/components/ui";
 
@@ -80,6 +80,9 @@ function CartRow({
 }) {
   return (
     <View style={styles.row}>
+      <View style={styles.rowThumb}>
+        <Leaf size={18} color={colors.accent} />
+      </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.rowName}>{line.name}</Text>
         <Text style={styles.rowPrice}>₹{line.unitPrice} each</Text>
@@ -135,8 +138,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontFamily: fonts.serif, color: colors.text, marginBottom: 16 },
   empty: { color: colors.textMuted, fontFamily: fonts.sans },
   row: {
-    flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: colors.panel, borderRadius: radii.lg, padding: 14,
+    flexDirection: "row", alignItems: "center", gap: 12,
+    backgroundColor: "#fff", borderRadius: radii.lg, padding: 14,
+    borderWidth: 1, borderColor: colors.border, ...shadow.card,
+  },
+  rowThumb: {
+    width: 40, height: 40, borderRadius: radii.md, backgroundColor: colors.panel,
+    alignItems: "center", justifyContent: "center",
   },
   rowName: { fontSize: 14.5, fontFamily: fonts.serifMedium, color: colors.text },
   rowPrice: { fontSize: 12, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 2 },
@@ -148,7 +156,8 @@ const styles = StyleSheet.create({
   stepperQty: { fontSize: 14, fontFamily: fonts.mono, color: colors.text, minWidth: 16, textAlign: "center" },
   rowTotal: { fontSize: 14, fontFamily: fonts.mono, color: colors.text, minWidth: 50, textAlign: "right" },
   summary: {
-    borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 16, marginTop: 8,
+    backgroundColor: "#fff", borderRadius: radii.xl, padding: 18, marginTop: 12,
+    borderWidth: 1, borderColor: colors.border, ...shadow.card,
   },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 8 },
   hint: { fontSize: 11.5, fontFamily: fonts.sans, color: colors.warm, marginBottom: 6 },

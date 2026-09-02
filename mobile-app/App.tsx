@@ -10,6 +10,7 @@ import { AddressProvider } from "@/context/AddressContext";
 import { CategoriesProvider } from "@/context/CategoriesContext";
 import { MenuItemsProvider } from "@/context/MenuItemsContext";
 import { CartProvider } from "@/context/CartContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 import RootNavigator from "@/navigation/RootNavigator";
 import { colors } from "@/lib/theme";
 
@@ -29,16 +30,18 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AddressProvider>
-          <CategoriesProvider>
-            <MenuItemsProvider>
-              <CartProvider>
-                <StatusBar style="dark" />
-                <RootNavigator />
-              </CartProvider>
-            </MenuItemsProvider>
-          </CategoriesProvider>
-        </AddressProvider>
+        <NotificationsProvider>
+          <AddressProvider>
+            <CategoriesProvider>
+              <MenuItemsProvider>
+                <CartProvider>
+                  <StatusBar style="dark" />
+                  <RootNavigator />
+                </CartProvider>
+              </MenuItemsProvider>
+            </CategoriesProvider>
+          </AddressProvider>
+        </NotificationsProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

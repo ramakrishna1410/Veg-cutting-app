@@ -12,8 +12,11 @@ import MenuListScreen from "@/screens/main/MenuListScreen";
 import MenuItemDetailScreen from "@/screens/main/MenuItemDetailScreen";
 import SlotPickerScreen from "@/screens/main/SlotPickerScreen";
 import CheckoutScreen from "@/screens/main/CheckoutScreen";
+import OrderTrackingScreen from "@/screens/main/OrderTrackingScreen";
+import NotificationsScreen from "@/screens/main/NotificationsScreen";
 import DeliveryOrdersScreen from "@/screens/delivery/DeliveryOrdersScreen";
 import DeliveryOrderDetailScreen from "@/screens/delivery/DeliveryOrderDetailScreen";
+import Toast from "@/components/Toast";
 import { colors } from "@/lib/theme";
 import {
   AuthStackParamList,
@@ -72,6 +75,16 @@ function MainNavigator() {
         options={{ title: "Delivery slot" }}
       />
       <RootStack.Screen name="Checkout" component={CheckoutScreen} options={{ title: "Checkout" }} />
+      <RootStack.Screen
+        name="OrderTracking"
+        component={OrderTrackingScreen}
+        options={{ title: "Track order" }}
+      />
+      <RootStack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ headerShown: false }}
+      />
     </RootStack.Navigator>
   );
 }
@@ -121,6 +134,7 @@ export default function RootNavigator() {
   return (
     <NavigationContainer>
       <AddressGate />
+      <Toast />
     </NavigationContainer>
   );
 }

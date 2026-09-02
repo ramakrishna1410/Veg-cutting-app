@@ -72,7 +72,7 @@ service cloud.firestore {
       allow update: if isAdmin()
                     || (isDelivery() && resource.data.assignedDeliveryUid == myUid()
                         && request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['status']))
+                             .hasOnly(['status', 'liveLocation']))
                     || (isSignedIn() && resource.data.uid == myUid()
                         && resource.data.status == 'pending'
                         && request.resource.data.status == 'cancelled'

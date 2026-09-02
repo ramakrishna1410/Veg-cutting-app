@@ -1,12 +1,13 @@
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
-import { ChevronRight, Leaf } from "lucide-react-native";
+import { Leaf, Minus, Plus } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCategories } from "@/context/CategoriesContext";
 import { useMenuItems } from "@/context/MenuItemsContext";
+import { useCart } from "@/context/CartContext";
 import { MenuItemDoc } from "@/lib/domain";
 import { RootStackParamList } from "@/navigation/types";
-import { colors, fonts, radii } from "@/lib/theme";
+import { colors, fonts, radii, shadow, tileColors } from "@/lib/theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MenuList">;
 
@@ -27,9 +28,10 @@ export default function MenuListScreen({ route, navigation }: Props) {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <MenuItemCard
             item={item}
+            colorIndex={index}
             onPress={() => navigation.navigate("MenuItemDetail", { menuItemId: item.id })}
           />
         )}
@@ -40,18 +42,54 @@ export default function MenuListScreen({ route, navigation }: Props) {
   );
 }
 
-function MenuItemCard({ item, onPress }: { item: MenuItemDoc; onPress: () => void }) {
+function MenuItemCard({
+  item,
+  colorIndex,
+  onPress,
+}: {
+  item: MenuItemDoc;
+  colorIndex: number;
+  onPress: () => void;
+}) {
+  const { lines, setQuantity } = useCart();
+  const line = lines.find((l) => l.menuItemId === item.id);
+  const palette = tileColors[colorIndex % tileColors.length];
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.cardIcon}>
-        <Leaf size={18} color={colors.accent} />
+      <View style={[styles.thumb, { backgroundColor: palette.bg }]}>
+        <Leaf size={26} color={palette.fg} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardDesc}>{item.description}</Text>
-        <Text style={styles.cardPrice}>₹{item.price} / pack</Text>
+        <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.cardDesc} numberOfLines={2}>{item.description}</Text>
+        <View style={styles.bottomRow}>
+          <Text style={styles.cardPrice}>₹{item.price}</Text>
+          {line ? (
+            <View style={styles.stepper}>
+              <Pressable
+                style={styles.stepperBtn}
+                onPress={() => setQuantity(item.id, line.quantity - 1)}
+                hitSlop={6}
+              >
+                <Minus size={13} color={colors.accent} />
+              </Pressable>
+              <Text style={styles.stepperQty}>{line.quantity}</Text>
+              <Pressable
+                style={styles.stepperBtn}
+                onPress={() => setQuantity(item.id, line.quantity + 1)}
+                hitSlop={6}
+              >
+                <Plus size={13} color={colors.accent} />
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable style={styles.addBtn} onPress={() => setQuantity(item.id, 1)}>
+              <Text style={styles.addBtnText}>ADD</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
-      <ChevronRight size={18} color={colors.textMuted} />
     </Pressable>
   );
 }
@@ -63,18 +101,36 @@ const styles = StyleSheet.create({
   loading: { fontFamily: fonts.sans, color: colors.textMuted },
   empty: { fontFamily: fonts.sans, color: colors.textMuted },
   card: {
-    backgroundColor: colors.panel,
+    backgroundColor: "#fff",
     borderRadius: radii.xl,
-    padding: 16,
+    padding: 14,
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 12,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
   },
-  cardIcon: {
-    width: 38, height: 38, borderRadius: radii.md, backgroundColor: colors.panel2,
+  thumb: {
+    width: 64, height: 64, borderRadius: radii.lg,
     alignItems: "center", justifyContent: "center",
   },
-  cardTitle: { fontSize: 16.5, fontFamily: fonts.serifMedium, color: colors.text },
-  cardDesc: { fontSize: 13, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 4 },
-  cardPrice: { fontSize: 13, fontFamily: fonts.sansSemiBold, color: colors.accent, marginTop: 8 },
+  cardTitle: { fontSize: 15.5, fontFamily: fonts.serifMedium, color: colors.text },
+  cardDesc: { fontSize: 12.5, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 3 },
+  bottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 10 },
+  cardPrice: { fontSize: 15, fontFamily: fonts.sansBold, color: colors.text },
+  addBtn: {
+    borderWidth: 1.5, borderColor: colors.accent, borderRadius: radii.pill,
+    paddingHorizontal: 18, paddingVertical: 6, backgroundColor: colors.panel,
+  },
+  addBtnText: { fontSize: 12.5, fontFamily: fonts.sansBold, color: colors.accent, letterSpacing: 0.5 },
+  stepper: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: colors.accent, borderRadius: radii.pill, paddingHorizontal: 8, paddingVertical: 5,
+  },
+  stepperBtn: {
+    width: 20, height: 20, borderRadius: 10, backgroundColor: "#fff",
+    alignItems: "center", justifyContent: "center",
+  },
+  stepperQty: { fontSize: 13, fontFamily: fonts.sansBold, color: "#fff", minWidth: 14, textAlign: "center" },
 });

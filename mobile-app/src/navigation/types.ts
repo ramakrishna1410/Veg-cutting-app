@@ -19,6 +19,8 @@ export type RootStackParamList = {
   MenuItemDetail: { menuItemId: string };
   SlotPicker: undefined;
   Checkout: { slot: "morning" | "evening" };
+  OrderTracking: { orderId: string };
+  Notifications: undefined;
 };
 
 export type DeliveryStackParamList = {

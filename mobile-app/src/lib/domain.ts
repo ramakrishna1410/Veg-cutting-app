@@ -50,6 +50,13 @@ export interface OrderItem {
   unitPrice: number;
 }
 
+export interface LiveLocation {
+  lat: number;
+  lng: number;
+  heading: number | null;
+  updatedAt: number;
+}
+
 export interface OrderDoc {
   id: string;
   uid: string;
@@ -65,6 +72,11 @@ export interface OrderDoc {
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   createdAt: number;
+  // Written by the delivery partner's app while status is "out_for_delivery"
+  // and their app is open/foregrounded — this is live-while-open tracking,
+  // not true background tracking (that needs Android background-location
+  // approval, which we're deliberately not taking on yet).
+  liveLocation?: LiveLocation | null;
 }
 
 export interface BookingWindowsConfig {

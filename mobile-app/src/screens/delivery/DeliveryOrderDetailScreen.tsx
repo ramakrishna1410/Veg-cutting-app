@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Linking, ActivityIndicator } from "react-native";
-import { MapPin, Navigation } from "lucide-react-native";
+import { MapPin, Navigation, Radio } from "lucide-react-native";
+import * as Location from "expo-location";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { db } from "@/lib/firebase";
@@ -16,12 +17,52 @@ export default function DeliveryOrderDetailScreen({ route }: Props) {
   const [order, setOrder] = useState<OrderDoc | null>(null);
   const [address, setAddress] = useState<AddressDoc | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [sharingLocation, setSharingLocation] = useState(false);
+  const watchRef = useRef<Location.LocationSubscription | null>(null);
 
   useEffect(() => {
     return onSnapshot(doc(db, "orders", orderId), (snap) => {
       setOrder(snap.exists() ? (snap.data() as OrderDoc) : null);
     });
   }, [orderId]);
+
+  // Share live location with the customer while this order is out for
+  // delivery — only while this screen is open and the app is foregrounded.
+  // This is not true background tracking (that needs a separate Android
+  // background-location permission flow); it stops the moment the delivery
+  // partner leaves this screen or the order is marked delivered.
+  useEffect(() => {
+    if (order?.status !== "out_for_delivery") {
+      watchRef.current?.remove();
+      watchRef.current = null;
+      setSharingLocation(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (cancelled || status !== "granted") return;
+      watchRef.current = await Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.High, timeInterval: 8000, distanceInterval: 15 },
+        (loc) => {
+          setSharingLocation(true);
+          updateDoc(doc(db, "orders", orderId), {
+            liveLocation: {
+              lat: loc.coords.latitude,
+              lng: loc.coords.longitude,
+              heading: loc.coords.heading ?? null,
+              updatedAt: Date.now(),
+            },
+          }).catch(() => {});
+        }
+      );
+    })();
+    return () => {
+      cancelled = true;
+      watchRef.current?.remove();
+      watchRef.current = null;
+    };
+  }, [order?.status, orderId]);
 
   useEffect(() => {
     if (!order) return;
@@ -33,7 +74,10 @@ export default function DeliveryOrderDetailScreen({ route }: Props) {
   async function updateStatus(status: OrderStatus) {
     setUpdating(true);
     try {
-      await updateDoc(doc(db, "orders", orderId), { status });
+      await updateDoc(doc(db, "orders", orderId), {
+        status,
+        ...(status === "delivered" ? { liveLocation: null } : {}),
+      });
     } finally {
       setUpdating(false);
     }
@@ -101,6 +145,15 @@ export default function DeliveryOrderDetailScreen({ route }: Props) {
         )}
       </Card>
 
+      {order.status === "out_for_delivery" && (
+        <View style={styles.liveRow}>
+          <Radio size={13} color={sharingLocation ? colors.accent : colors.textMuted} />
+          <Text style={[styles.liveText, sharingLocation && { color: colors.accent }]}>
+            {sharingLocation ? "Sharing live location with customer" : "Getting your location..."}
+          </Text>
+        </View>
+      )}
+
       {order.status === "confirmed" && (
         <PrimaryButton onPress={() => updateStatus("out_for_delivery")} disabled={updating}>
           {updating ? "Please wait..." : "Start delivery"}
@@ -133,4 +186,6 @@ const styles = StyleSheet.create({
   cardSub: { fontSize: 12.5, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 8 },
   addressLabel: { fontFamily: fonts.sansBold, fontSize: 13, color: colors.text },
   addressValue: { fontSize: 13, fontFamily: fonts.sans, color: colors.text, marginTop: 2 },
+  liveRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12, alignSelf: "center" },
+  liveText: { fontSize: 12, fontFamily: fonts.sansSemiBold, color: colors.textMuted },
 });

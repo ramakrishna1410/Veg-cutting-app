@@ -28,6 +28,27 @@ export const fonts = {
 
 export const radii = { sm: 8, md: 10, lg: 14, xl: 18, pill: 999 };
 
+export const shadow = {
+  card: {
+    shadowColor: "#1F2A1F",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+};
+
+// Rotating pastel tile palette for category/product cards — gives each tile
+// a distinct color without needing per-category art.
+export const tileColors = [
+  { bg: "#E8F3E3", fg: "#2F6B3C" },
+  { bg: "#FCEFDD", fg: "#B7791F" },
+  { bg: "#E7EEFB", fg: "#2C5C8A" },
+  { bg: "#FBEAE6", fg: "#B3412C" },
+  { bg: "#F1E9FA", fg: "#6B4C9A" },
+  { bg: "#E3F5F0", fg: "#1F7A63" },
+];
+
 export const chipColors: Record<string, { bg: string; fg: string }> = {
   pending: { bg: "#FBF1E0", fg: "#92650E" },
   confirmed: { bg: colors.panel2, fg: colors.accent },

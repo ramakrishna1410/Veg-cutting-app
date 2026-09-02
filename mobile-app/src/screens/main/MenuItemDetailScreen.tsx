@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
-import { Minus, Plus } from "lucide-react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import { Leaf, Minus, Plus } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useMenuItems } from "@/context/MenuItemsContext";
 import { useCart } from "@/context/CartContext";
 import { RootStackParamList } from "@/navigation/types";
-import { colors, fonts, radii } from "@/lib/theme";
+import { colors, fonts, radii, shadow } from "@/lib/theme";
 import { PrimaryButton, Card } from "@/components/ui";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MenuItemDetail">;
@@ -31,7 +31,10 @@ export default function MenuItemDetailScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+      <View style={styles.hero}>
+        <Leaf size={56} color={colors.accent} />
+      </View>
       <Text style={styles.title}>{menuItem.name}</Text>
       <Text style={styles.description}>{menuItem.description}</Text>
 
@@ -66,12 +69,16 @@ export default function MenuItemDetailScreen({ route, navigation }: Props) {
       <PrimaryButton style={{ marginTop: 28 }} onPress={handleAddToCart}>
         Add {qty} to cart — ₹{menuItem.price * qty}
       </PrimaryButton>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56, backgroundColor: colors.bg },
+  container: { flex: 1, backgroundColor: colors.bg },
+  hero: {
+    height: 160, borderRadius: radii.xl, backgroundColor: colors.panel,
+    alignItems: "center", justifyContent: "center", marginBottom: 18, ...shadow.card,
+  },
   title: { fontSize: 24, fontFamily: fonts.serif, color: colors.text },
   description: { fontSize: 14, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 8, marginBottom: 20 },
   sectionLabel: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, marginBottom: 8 },
