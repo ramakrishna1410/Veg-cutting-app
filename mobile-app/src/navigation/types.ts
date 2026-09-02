@@ -20,3 +20,8 @@ export type RootStackParamList = {
   SlotPicker: undefined;
   Checkout: { slot: "morning" | "evening" };
 };
+
+export type DeliveryStackParamList = {
+  DeliveryOrders: undefined;
+  DeliveryOrderDetail: { orderId: string };
+};

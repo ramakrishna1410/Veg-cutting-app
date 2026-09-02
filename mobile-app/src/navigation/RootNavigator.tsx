@@ -12,16 +12,20 @@ import MenuListScreen from "@/screens/main/MenuListScreen";
 import MenuItemDetailScreen from "@/screens/main/MenuItemDetailScreen";
 import SlotPickerScreen from "@/screens/main/SlotPickerScreen";
 import CheckoutScreen from "@/screens/main/CheckoutScreen";
+import DeliveryOrdersScreen from "@/screens/delivery/DeliveryOrdersScreen";
+import DeliveryOrderDetailScreen from "@/screens/delivery/DeliveryOrderDetailScreen";
 import { colors } from "@/lib/theme";
 import {
   AuthStackParamList,
   OnboardingStackParamList,
   RootStackParamList,
+  DeliveryStackParamList,
 } from "@/navigation/types";
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList & { Main: undefined }>();
+const DeliveryStack = createNativeStackNavigator<DeliveryStackParamList>();
 
 function LoadingScreen() {
   return (
@@ -72,6 +76,19 @@ function MainNavigator() {
   );
 }
 
+function DeliveryNavigator() {
+  return (
+    <DeliveryStack.Navigator screenOptions={{ headerShown: false }}>
+      <DeliveryStack.Screen name="DeliveryOrders" component={DeliveryOrdersScreen} />
+      <DeliveryStack.Screen
+        name="DeliveryOrderDetail"
+        component={DeliveryOrderDetailScreen}
+        options={{ headerShown: true, title: "" }}
+      />
+    </DeliveryStack.Navigator>
+  );
+}
+
 export default function RootNavigator() {
   const { firebaseUser, appUser, loading } = useAuth();
 
@@ -87,6 +104,16 @@ export default function RootNavigator() {
     return (
       <NavigationContainer>
         <AuthNavigator />
+      </NavigationContainer>
+    );
+  }
+
+  // Delivery partners get their own flow — no shopping cart, no address
+  // gate (they don't need a delivery address of their own).
+  if (appUser.role === "delivery") {
+    return (
+      <NavigationContainer>
+        <DeliveryNavigator />
       </NavigationContainer>
     );
   }
