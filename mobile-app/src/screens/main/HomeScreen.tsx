@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { Bell, Leaf, MapPin, Salad, Soup, Sparkles } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { MotiView } from "moti";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { useCategories } from "@/context/CategoriesContext";
@@ -9,8 +11,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/context/NotificationsContext";
 import { CategoryDoc } from "@/lib/domain";
 import BookingWindowBanner from "@/components/BookingWindowBanner";
+import { Skeleton } from "@/components/ui";
 import { RootStackParamList } from "@/navigation/types";
-import { colors, fonts, radii, shadow, tileColors } from "@/lib/theme";
+import { colors, fonts, gradients, radii, shadow, tileColors } from "@/lib/theme";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -59,7 +62,12 @@ export default function HomeScreen() {
               </Pressable>
             </View>
 
-            <View style={styles.banner}>
+            <LinearGradient
+              colors={gradients.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.banner}
+            >
               <View style={{ flex: 1 }}>
                 <Text style={styles.bannerEyebrow}>FRESH · PRE-CUT · DAILY</Text>
                 <Text style={styles.bannerTitle}>Veggies cut & ready{"\n"}in 2 daily slots</Text>
@@ -67,11 +75,16 @@ export default function HomeScreen() {
               <View style={styles.bannerIcon}>
                 <Leaf size={28} color="#fff" />
               </View>
-            </View>
+            </LinearGradient>
 
             <BookingWindowBanner />
             <Text style={styles.sectionTitle}>Shop by category</Text>
-            {loading && <Text style={styles.loading}>Loading categories...</Text>}
+            {loading && (
+              <View style={styles.skeletonRow}>
+                <Skeleton width="47%" height={108} radius={radii.xl} />
+                <Skeleton width="47%" height={108} radius={radii.xl} />
+              </View>
+            )}
           </View>
         }
         renderItem={({ item, index }) => (
@@ -99,12 +112,19 @@ function CategoryCard({
   const palette = tileColors[colorIndex % tileColors.length];
   const Icon = CATEGORY_ICONS[colorIndex % CATEGORY_ICONS.length];
   return (
-    <Pressable style={[styles.card, { backgroundColor: palette.bg }]} onPress={onPress}>
-      <View style={[styles.cardIcon, { backgroundColor: "#fff" }]}>
-        <Icon size={22} color={palette.fg} />
-      </View>
-      <Text style={[styles.cardTitle, { color: palette.fg }]}>{category.name}</Text>
-    </Pressable>
+    <MotiView
+      from={{ opacity: 0, translateY: 12 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "timing", duration: 320, delay: colorIndex * 60 }}
+      style={{ flex: 1 }}
+    >
+      <Pressable style={[styles.card, { backgroundColor: palette.bg }]} onPress={onPress}>
+        <View style={[styles.cardIcon, { backgroundColor: "#fff" }]}>
+          <Icon size={22} color={palette.fg} />
+        </View>
+        <Text style={[styles.cardTitle, { color: palette.fg }]}>{category.name}</Text>
+      </Pressable>
+    </MotiView>
   );
 }
 
@@ -137,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center", marginLeft: 12,
   },
   sectionTitle: { fontSize: 16, fontFamily: fonts.sansBold, color: colors.text, marginTop: 18, marginBottom: 4 },
-  loading: { fontFamily: fonts.sans, color: colors.textMuted, marginTop: 8 },
+  skeletonRow: { flexDirection: "row", gap: 12, marginTop: 12 },
   card: {
     flex: 1, borderRadius: radii.xl, padding: 16, minHeight: 108, justifyContent: "space-between",
     ...shadow.card,

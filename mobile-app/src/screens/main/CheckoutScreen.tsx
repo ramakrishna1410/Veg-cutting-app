@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { Banknote, CreditCard } from "lucide-react-native";
+import { Banknote, CheckCircle2, CreditCard } from "lucide-react-native";
+import { AnimatePresence, MotiView } from "moti";
+import * as Haptics from "expo-haptics";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCart } from "@/context/CartContext";
 import { useAddresses } from "@/context/AddressContext";
@@ -18,6 +20,7 @@ export default function CheckoutScreen({ route, navigation }: Props) {
   const { primaryAddress } = useAddresses();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [placing, setPlacing] = useState(false);
+  const [placed, setPlaced] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleConfirm() {
@@ -32,7 +35,9 @@ export default function CheckoutScreen({ route, navigation }: Props) {
         paymentMethod: "cod",
       });
       clear();
-      navigation.getParent()?.navigate("Orders" as never);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setPlaced(true);
+      setTimeout(() => navigation.getParent()?.navigate("Orders" as never), 1100);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not place order.");
     } finally {
@@ -88,10 +93,30 @@ export default function CheckoutScreen({ route, navigation }: Props) {
       <PrimaryButton
         style={{ marginTop: 24 }}
         onPress={handleConfirm}
-        disabled={!primaryAddress || lines.length === 0 || placing}
+        disabled={!primaryAddress || lines.length === 0 || placing || placed}
       >
         {placing ? "Placing order..." : `Place order — ₹${total}`}
       </PrimaryButton>
+
+      <AnimatePresence>
+        {placed && (
+          <MotiView
+            from={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={styles.successOverlay}
+          >
+            <MotiView
+              from={{ scale: 0.4, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 10 }}
+            >
+              <CheckCircle2 size={64} color={colors.leaf} />
+            </MotiView>
+            <Text style={styles.successText}>Order placed!</Text>
+          </MotiView>
+        )}
+      </AnimatePresence>
     </View>
   );
 }
@@ -155,4 +180,10 @@ const styles = StyleSheet.create({
   paymentLabel: { fontSize: 14, fontFamily: fonts.sansSemiBold, color: colors.text },
   paymentSub: { fontSize: 11.5, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 2 },
   error: { color: colors.danger, marginTop: 16, fontFamily: fonts.sans, fontSize: 13 },
+  successOverlay: {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(255,255,255,0.96)",
+    alignItems: "center", justifyContent: "center",
+  },
+  successText: { fontSize: 18, fontFamily: fonts.serif, color: colors.text, marginTop: 14 },
 });

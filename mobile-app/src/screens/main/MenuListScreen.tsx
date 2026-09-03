@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { Leaf, Minus, Plus } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCategories } from "@/context/CategoriesContext";
 import { useMenuItems } from "@/context/MenuItemsContext";
@@ -84,7 +85,13 @@ function MenuItemCard({
               </Pressable>
             </View>
           ) : (
-            <Pressable style={styles.addBtn} onPress={() => setQuantity(item.id, 1)}>
+            <Pressable
+              style={styles.addBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setQuantity(item.id, 1);
+              }}
+            >
               <Text style={styles.addBtnText}>ADD</Text>
             </Pressable>
           )}

@@ -1,5 +1,6 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useRef } from "react";
 import {
+  Animated,
   Pressable,
   PressableProps,
   StyleSheet,
@@ -7,7 +8,9 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { colors, fonts, radii, chipColors } from "@/lib/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { Skeleton as MotiSkeleton } from "moti/skeleton";
+import { colors, fonts, gradients, radii, shadow, chipColors } from "@/lib/theme";
 
 export function Card({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) {
   return <View style={[styles.card, style]}>{children}</View>;
@@ -25,20 +28,49 @@ export function SerifTitle({ children, style }: PropsWithChildren<{ style?: obje
   return <Text style={[styles.serifTitle, style]}>{children}</Text>;
 }
 
+/** Wraps a Pressable with a subtle scale-down on press — used by both button styles below. */
+function usePressScale() {
+  const scale = useRef(new Animated.Value(1)).current;
+  const onPressIn = () =>
+    Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
+  const onPressOut = () =>
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+  return { scale, onPressIn, onPressOut };
+}
+
 export function PrimaryButton({
   children,
   disabled,
   style,
+  onPressIn,
+  onPressOut,
   ...rest
 }: PropsWithChildren<PressableProps & { disabled?: boolean; style?: ViewStyle }>) {
+  const { scale, onPressIn: pressIn, onPressOut: pressOut } = usePressScale();
   return (
-    <Pressable
-      style={[styles.primaryButton, disabled && styles.primaryButtonDisabled, style]}
-      disabled={disabled}
-      {...rest}
-    >
-      <Text style={styles.primaryButtonText}>{children}</Text>
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Pressable
+        disabled={disabled}
+        onPressIn={(e) => {
+          pressIn();
+          onPressIn?.(e);
+        }}
+        onPressOut={(e) => {
+          pressOut();
+          onPressOut?.(e);
+        }}
+        {...rest}
+      >
+        <LinearGradient
+          colors={disabled ? [colors.textMuted, colors.textMuted] : gradients.primary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.primaryButton, !disabled && shadow.button, style]}
+        >
+          <Text style={styles.primaryButtonText}>{children}</Text>
+        </LinearGradient>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -46,13 +78,29 @@ export function SecondaryButton({
   children,
   icon,
   style,
+  onPressIn,
+  onPressOut,
   ...rest
 }: PropsWithChildren<PressableProps & { icon?: React.ReactNode; style?: ViewStyle }>) {
+  const { scale, onPressIn: pressIn, onPressOut: pressOut } = usePressScale();
   return (
-    <Pressable style={[styles.secondaryButton, style]} {...rest}>
-      {icon}
-      <Text style={styles.secondaryButtonText}>{children}</Text>
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Pressable
+        style={[styles.secondaryButton, style]}
+        onPressIn={(e) => {
+          pressIn();
+          onPressIn?.(e);
+        }}
+        onPressOut={(e) => {
+          pressOut();
+          onPressOut?.(e);
+        }}
+        {...rest}
+      >
+        {icon}
+        <Text style={styles.secondaryButtonText}>{children}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -62,6 +110,20 @@ export function Chip({ status }: { status: string }) {
     <View style={[styles.chip, { backgroundColor: c.bg }]}>
       <Text style={[styles.chipText, { color: c.fg }]}>{status.replace(/_/g, " ")}</Text>
     </View>
+  );
+}
+
+/** Shimmering placeholder block — use while data is loading instead of a plain "Loading..." string. */
+export function Skeleton({ width, height, radius }: { width: number | `${number}%`; height: number; radius?: number }) {
+  return (
+    <MotiSkeleton
+      colorMode="light"
+      width={width}
+      height={height}
+      radius={radius ?? radii.md}
+      backgroundColor={colors.panel}
+      highlightColor={colors.panel2}
+    />
   );
 }
 
@@ -93,12 +155,10 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   primaryButton: {
-    backgroundColor: colors.accent,
     borderRadius: radii.md,
     paddingVertical: 14,
     alignItems: "center",
   },
-  primaryButtonDisabled: { opacity: 0.5 },
   primaryButtonText: {
     color: "#fff",
     fontSize: 15,

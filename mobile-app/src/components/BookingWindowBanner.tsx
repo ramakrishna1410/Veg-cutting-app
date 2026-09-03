@@ -10,9 +10,9 @@ export default function BookingWindowBanner() {
 
   if (!BOOKING_WINDOW_ENFORCED) {
     return (
-      <View style={[styles.banner, { backgroundColor: colors.panel2 }]}>
-        <Clock size={15} color={colors.accent} />
-        <Text style={[styles.text, { color: colors.accent }]}>
+      <View style={[styles.banner, { backgroundColor: colors.leafBg }]}>
+        <Clock size={15} color={colors.leaf} />
+        <Text style={[styles.text, { color: colors.leaf }]}>
           Booking-window check is disabled for testing — order anytime.
         </Text>
       </View>
@@ -20,9 +20,9 @@ export default function BookingWindowBanner() {
   }
 
   return (
-    <View style={[styles.banner, { backgroundColor: openSlot ? colors.panel2 : "#FBF1E0" }]}>
-      <Clock size={15} color={openSlot ? colors.accent : "#92650E"} />
-      <Text style={[styles.text, { color: openSlot ? colors.accent : "#92650E" }]}>
+    <View style={[styles.banner, { backgroundColor: openSlot ? colors.leafBg : "#FBF1E0" }]}>
+      <Clock size={15} color={openSlot ? colors.leaf : "#92650E"} />
+      <Text style={[styles.text, { color: openSlot ? colors.leaf : "#92650E" }]}>
         {openSlot
           ? `Booking is open now for the ${openSlot} slot`
           : "Booking is closed. Opens 5–8 AM and 5–8 PM daily."}

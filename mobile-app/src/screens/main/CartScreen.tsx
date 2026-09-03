@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { Leaf, Minus, Plus, Trash2 } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCart, CartLine } from "@/context/CartContext";
@@ -46,7 +47,7 @@ export default function CartScreen() {
           <SummaryRow
             label="Delivery"
             value={deliveryFee === 0 ? "Free" : `₹${deliveryFee}`}
-            valueColor={deliveryFee === 0 ? colors.accent : colors.text}
+            valueColor={deliveryFee === 0 ? colors.leaf : colors.text}
           />
           {deliveryFee > 0 && (
             <Text style={styles.hint}>
@@ -90,12 +91,21 @@ function CartRow({
       <View style={styles.stepper}>
         <Pressable
           style={styles.stepperBtn}
-          onPress={() => (line.quantity <= 1 ? onRemove() : onQtyChange(line.quantity - 1))}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            line.quantity <= 1 ? onRemove() : onQtyChange(line.quantity - 1);
+          }}
         >
           {line.quantity <= 1 ? <Trash2 size={14} color={colors.danger} /> : <Minus size={14} color={colors.text} />}
         </Pressable>
         <Text style={styles.stepperQty}>{line.quantity}</Text>
-        <Pressable style={styles.stepperBtn} onPress={() => onQtyChange(line.quantity + 1)}>
+        <Pressable
+          style={styles.stepperBtn}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            onQtyChange(line.quantity + 1);
+          }}
+        >
           <Plus size={14} color={colors.text} />
         </Pressable>
       </View>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Linking, ActivityIndicator } from "react-native";
 import { MapPin, Navigation, Radio } from "lucide-react-native";
+import { MotiView } from "moti";
 import * as Location from "expo-location";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -147,8 +148,13 @@ export default function DeliveryOrderDetailScreen({ route }: Props) {
 
       {order.status === "out_for_delivery" && (
         <View style={styles.liveRow}>
-          <Radio size={13} color={sharingLocation ? colors.accent : colors.textMuted} />
-          <Text style={[styles.liveText, sharingLocation && { color: colors.accent }]}>
+          <MotiView
+            animate={{ opacity: sharingLocation ? [1, 0.35, 1] : 1 }}
+            transition={{ type: "timing", duration: 1200, loop: sharingLocation, repeatReverse: false }}
+          >
+            <Radio size={13} color={sharingLocation ? colors.leaf : colors.textMuted} />
+          </MotiView>
+          <Text style={[styles.liveText, sharingLocation && { color: colors.leaf }]}>
             {sharingLocation ? "Sharing live location with customer" : "Getting your location..."}
           </Text>
         </View>
