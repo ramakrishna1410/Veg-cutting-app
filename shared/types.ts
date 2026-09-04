@@ -31,6 +31,7 @@ export interface CategoryDoc {
   name: string;
   sortOrder: number;
   active: boolean;
+  imageUrl?: string;
 }
 
 // A single orderable veg pack within a category, e.g. "Biryani Veggies"

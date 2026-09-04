@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Image, Pressable, StyleSheet } from "react-native";
 import { Leaf, Minus, Plus } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -58,9 +58,13 @@ function MenuItemCard({
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={[styles.thumb, { backgroundColor: palette.bg }]}>
-        <Leaf size={26} color={palette.fg} />
-      </View>
+      {item.imageUrl ? (
+        <Image source={{ uri: item.imageUrl }} style={styles.thumbPhoto} />
+      ) : (
+        <View style={[styles.thumb, { backgroundColor: palette.bg }]}>
+          <Leaf size={26} color={palette.fg} />
+        </View>
+      )}
       <View style={{ flex: 1 }}>
         <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
         <Text style={styles.cardDesc} numberOfLines={2}>{item.description}</Text>
@@ -122,6 +126,7 @@ const styles = StyleSheet.create({
     width: 64, height: 64, borderRadius: radii.lg,
     alignItems: "center", justifyContent: "center",
   },
+  thumbPhoto: { width: 64, height: 64, borderRadius: radii.lg },
   cardTitle: { fontSize: 15.5, fontFamily: fonts.serifMedium, color: colors.text },
   cardDesc: { fontSize: 12.5, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 3 },
   bottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 10 },

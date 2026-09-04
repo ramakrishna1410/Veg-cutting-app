@@ -12,6 +12,7 @@ import {
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { CategoryDoc, MenuItemDoc } from "@/lib/domain";
+import ImageUploader from "@/components/ImageUploader";
 
 const empty = {
   categoryId: "",
@@ -142,8 +143,12 @@ export default function MenuItemsPage() {
             <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
           <div className="field">
-            <label>Image URL</label>
-            <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+            <label>Photo</label>
+            <ImageUploader
+              folder="menuItems"
+              value={form.imageUrl}
+              onChange={(url) => setForm({ ...form, imageUrl: url })}
+            />
           </div>
           <div className="field">
             <label>Items (comma separated)</label>
@@ -184,7 +189,14 @@ export default function MenuItemsPage() {
               <tbody>
                 {visibleItems.map((item) => (
                   <tr key={item.id}>
-                    <td style={{ fontWeight: 600 }}>{item.name}</td>
+                    <td style={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt="" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--panel-2)" }} />
+                      )}
+                      {item.name}
+                    </td>
                     <td style={{ color: "var(--text-muted)" }}>{categoryName(item.categoryId)}</td>
                     <td style={{ color: "var(--text-muted)" }}>{item.items.join(", ")}</td>
                     <td>₹{item.price}</td>

@@ -12,8 +12,9 @@ import {
 import { Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { CategoryDoc } from "@/lib/domain";
+import ImageUploader from "@/components/ImageUploader";
 
-const empty = { name: "", sortOrder: 0 };
+const empty = { name: "", sortOrder: 0, imageUrl: "" };
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryDoc[]>([]);
@@ -30,7 +31,7 @@ export default function CategoriesPage() {
 
   function startEdit(category: CategoryDoc) {
     setEditingId(category.id);
-    setForm({ name: category.name, sortOrder: category.sortOrder });
+    setForm({ name: category.name, sortOrder: category.sortOrder, imageUrl: category.imageUrl ?? "" });
   }
 
   function cancelEdit() {
@@ -46,11 +47,13 @@ export default function CategoriesPage() {
         await updateDoc(doc(db, "categories", editingId), {
           name: form.name,
           sortOrder: Number(form.sortOrder),
+          imageUrl: form.imageUrl,
         });
       } else {
         const ref = await addDoc(collection(db, "categories"), {
           name: form.name,
           sortOrder: Number(form.sortOrder) || categories.length + 1,
+          imageUrl: form.imageUrl,
           active: true,
         });
         await updateDoc(ref, { id: ref.id });
@@ -78,6 +81,14 @@ export default function CategoriesPage() {
       <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 340px) 1fr", gap: 28, alignItems: "flex-start" }}>
         <form onSubmit={handleSubmit} className="card">
           <h3 className="section-title">{editingId ? "Edit category" : "Add category"}</h3>
+          <div className="field">
+            <label>Photo</label>
+            <ImageUploader
+              folder="categories"
+              value={form.imageUrl}
+              onChange={(url) => setForm({ ...form, imageUrl: url })}
+            />
+          </div>
           <div className="field">
             <label>Name</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -115,7 +126,15 @@ export default function CategoriesPage() {
             <tbody>
               {categories.map((c) => (
                 <tr key={c.id}>
-                  <td style={{ fontWeight: 600, cursor: "pointer" }} onClick={() => startEdit(c)}>
+                  <td
+                    style={{ fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
+                    onClick={() => startEdit(c)}
+                  >
+                    {c.imageUrl ? (
+                      <img src={c.imageUrl} alt="" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--panel-2)" }} />
+                    )}
                     {c.name}
                   </td>
                   <td>{c.sortOrder}</td>

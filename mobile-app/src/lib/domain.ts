@@ -18,6 +18,7 @@ export interface CategoryDoc {
   name: string;
   sortOrder: number;
   active: boolean;
+  imageUrl?: string;
 }
 
 export interface MenuItemDoc {

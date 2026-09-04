@@ -54,6 +54,9 @@ h1, h2, h3, .font-serif {
   100% { background-position: 300px 0; }
 }
 
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }
+
 .skeleton {
   border-radius: 10px;
   background: linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 37%, var(--panel) 63%);

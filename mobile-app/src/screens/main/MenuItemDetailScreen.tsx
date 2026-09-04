@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable, ScrollView, StyleSheet } from "react-native";
 import { Leaf, Minus, Plus } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useMenuItems } from "@/context/MenuItemsContext";
@@ -32,9 +32,13 @@ export default function MenuItemDetailScreen({ route, navigation }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-      <View style={styles.hero}>
-        <Leaf size={56} color={colors.accent} />
-      </View>
+      {menuItem.imageUrl ? (
+        <Image source={{ uri: menuItem.imageUrl }} style={styles.heroPhoto} />
+      ) : (
+        <View style={styles.hero}>
+          <Leaf size={56} color={colors.accent} />
+        </View>
+      )}
       <Text style={styles.title}>{menuItem.name}</Text>
       <Text style={styles.description}>{menuItem.description}</Text>
 
@@ -79,6 +83,7 @@ const styles = StyleSheet.create({
     height: 160, borderRadius: radii.xl, backgroundColor: colors.panel,
     alignItems: "center", justifyContent: "center", marginBottom: 18, ...shadow.card,
   },
+  heroPhoto: { height: 160, borderRadius: radii.xl, marginBottom: 18, ...shadow.card },
   title: { fontSize: 24, fontFamily: fonts.serif, color: colors.text },
   description: { fontSize: 14, fontFamily: fonts.sans, color: colors.textMuted, marginTop: 8, marginBottom: 20 },
   sectionLabel: { fontSize: 12.5, fontFamily: fonts.sansSemiBold, color: colors.textMuted, marginBottom: 8 },

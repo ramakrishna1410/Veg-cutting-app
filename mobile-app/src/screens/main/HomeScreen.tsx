@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Image, Pressable, StyleSheet } from "react-native";
 import { Bell, Leaf, MapPin, Salad, Soup, Sparkles } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
@@ -119,9 +119,13 @@ function CategoryCard({
       style={{ flex: 1 }}
     >
       <Pressable style={[styles.card, { backgroundColor: palette.bg }]} onPress={onPress}>
-        <View style={[styles.cardIcon, { backgroundColor: "#fff" }]}>
-          <Icon size={22} color={palette.fg} />
-        </View>
+        {category.imageUrl ? (
+          <Image source={{ uri: category.imageUrl }} style={styles.cardPhoto} />
+        ) : (
+          <View style={[styles.cardIcon, { backgroundColor: "#fff" }]}>
+            <Icon size={22} color={palette.fg} />
+          </View>
+        )}
         <Text style={[styles.cardTitle, { color: palette.fg }]}>{category.name}</Text>
       </Pressable>
     </MotiView>
@@ -165,5 +169,6 @@ const styles = StyleSheet.create({
   cardIcon: {
     width: 40, height: 40, borderRadius: radii.md, alignItems: "center", justifyContent: "center",
   },
+  cardPhoto: { width: 40, height: 40, borderRadius: radii.md },
   cardTitle: { fontSize: 14.5, fontFamily: fonts.sansBold, marginTop: 10 },
 });
