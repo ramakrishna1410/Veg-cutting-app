@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { OrderDoc } from "@/lib/domain";
 import { colors, fonts } from "@/lib/theme";
 import { Card, Chip, SecondaryButton } from "@/components/ui";
+import StatusTimeline from "@/components/StatusTimeline";
 import { RootStackParamList } from "@/navigation/types";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -52,6 +53,7 @@ export default function OrdersScreen() {
             <Text style={styles.cardTotal}>
               ₹{item.total}{item.deliveryFee > 0 ? ` (incl. ₹${item.deliveryFee} delivery)` : ""} · Cash on delivery
             </Text>
+            <StatusTimeline status={item.status} />
             {item.status === "out_for_delivery" && (
               <SecondaryButton
                 onPress={() => navigation.navigate("OrderTracking", { orderId: item.id })}

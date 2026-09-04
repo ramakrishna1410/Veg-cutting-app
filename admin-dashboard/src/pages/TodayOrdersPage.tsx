@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   collection,
   doc,
@@ -7,20 +7,55 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { Sunrise, Sunset } from "lucide-react";
+import { Sunrise, Sunset, Bell } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { istMidnightMillis } from "@/lib/dateUtils";
 import { OrderDoc, UserDoc } from "@/lib/domain";
 
+/** Short two-tone chime using the Web Audio API — no asset file needed. */
+function playNewOrderChime() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    [880, 1175].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      const start = ctx.currentTime + i * 0.14;
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.32);
+    });
+  } catch {
+    // Audio not available (e.g. autoplay-blocked before first user gesture) — fine to skip silently.
+  }
+}
+
 export default function TodayOrdersPage() {
   const [orders, setOrders] = useState<OrderDoc[]>([]);
   const [deliveryPartners, setDeliveryPartners] = useState<UserDoc[]>([]);
+  const [newOrderAlert, setNewOrderAlert] = useState(false);
+  const knownIds = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     const todayMidnight = istMidnightMillis();
     const q = query(collection(db, "orders"), where("deliveryDate", "==", todayMidnight));
     return onSnapshot(q, (snap) => {
-      setOrders(snap.docs.map((d) => d.data() as OrderDoc));
+      const nextOrders = snap.docs.map((d) => d.data() as OrderDoc);
+      const nextIds = new Set(nextOrders.map((o) => o.id));
+      if (knownIds.current) {
+        const hasNew = [...nextIds].some((id) => !knownIds.current!.has(id));
+        if (hasNew) {
+          playNewOrderChime();
+          setNewOrderAlert(true);
+          setTimeout(() => setNewOrderAlert(false), 5000);
+        }
+      }
+      knownIds.current = nextIds;
+      setOrders(nextOrders);
     });
   }, []);
 
@@ -44,6 +79,27 @@ export default function TodayOrdersPage() {
 
   return (
     <div>
+      {newOrderAlert && (
+        <div
+          style={{
+            position: "fixed", top: 20, right: 24, zIndex: 100,
+            display: "flex", alignItems: "center", gap: 10,
+            background: "#fff", border: "1px solid var(--border)", borderRadius: 14,
+            padding: "12px 18px", boxShadow: "0 10px 28px rgba(124,58,237,0.24)",
+            animation: "fadeSlideIn 0.3s ease",
+          }}
+        >
+          <div
+            style={{
+              width: 30, height: 30, borderRadius: 15, background: "var(--panel-2)",
+              display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)",
+            }}
+          >
+            <Bell size={15} />
+          </div>
+          <span style={{ fontWeight: 700, fontSize: 13.5 }}>New order received!</span>
+        </div>
+      )}
       <h1 className="page-title">Today's orders</h1>
       <p className="page-sub">Deliveries scheduled for today, split by slot.</p>
 

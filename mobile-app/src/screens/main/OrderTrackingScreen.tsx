@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { AddressDoc, OrderDoc } from "@/lib/domain";
 import { colors, fonts, radii } from "@/lib/theme";
 import { Chip } from "@/components/ui";
+import StatusTimeline from "@/components/StatusTimeline";
 import { RootStackParamList } from "@/navigation/types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "OrderTracking">;
@@ -103,6 +104,7 @@ export default function OrderTrackingScreen({ route }: Props) {
           </Text>
           <Chip status={order.status} />
         </View>
+        <StatusTimeline status={order.status} />
         {live ? (
           <Text style={styles.sheetSub}>
             Your delivery partner is on the way
