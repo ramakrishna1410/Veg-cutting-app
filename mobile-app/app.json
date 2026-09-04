@@ -44,6 +44,13 @@
         {
           "locationWhenInUsePermission": "We use your location to check if you're within our 5 km Keelkattalai delivery area."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/adaptive-icon.png",
+          "color": "#7C3AED"
+        }
       ]
     ],
     "extra": {

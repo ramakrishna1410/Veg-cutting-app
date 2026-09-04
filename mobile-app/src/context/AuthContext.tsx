@@ -12,6 +12,7 @@ import {
   User,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
+import { registerForPushNotifications } from "@/lib/pushNotifications";
 
 export type UserRole = "customer" | "admin" | "delivery";
 
@@ -21,6 +22,7 @@ export interface AppUser {
   name: string;
   phone: string;
   email?: string;
+  pushToken?: string;
 }
 
 interface AuthContextValue {
@@ -47,8 +49,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
         return;
       }
       const snap = await getDoc(doc(db, "users", user.uid));
-      setAppUser(snap.exists() ? (snap.data() as AppUser) : null);
+      const profile = snap.exists() ? (snap.data() as AppUser) : null;
+      setAppUser(profile);
       setLoading(false);
+      if (profile) registerForPushNotifications(profile.uid).catch(() => {});
     });
   }, []);
 
@@ -66,6 +70,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       createdAt: Date.now(),
     });
     setAppUser(newUser);
+    registerForPushNotifications(newUser.uid).catch(() => {});
   }
 
   async function signOut() {

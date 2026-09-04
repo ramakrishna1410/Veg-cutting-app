@@ -4,3 +4,4 @@ admin.initializeApp();
 
 export { createOrder } from "./createOrder";
 export { saveAddress } from "./saveAddress";
+export { onOrderUpdated } from "./notifications";
